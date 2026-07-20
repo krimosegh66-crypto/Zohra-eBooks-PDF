@@ -4,17 +4,13 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>نتائج البحث - المكتبة الرقمية</title>
-    <!-- Tailwind CSS via CDN + RTL support -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Font Awesome for icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
     <style>
-        /* تخصيصات إضافية لتحسين المظهر ودعم RTL */
         body {
             font-family: 'Tajawal', 'Segoe UI', system-ui, sans-serif;
             background-color: #f8fafc;
         }
-        /* تحسين شكل البطاقات */
         .book-card {
             transition: transform 0.2s, box-shadow 0.2s;
         }
@@ -22,7 +18,6 @@
             transform: translateY(-4px);
             box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
         }
-        /* تخصيص شريط التمرير الجانبي */
         .sidebar-scroll {
             max-height: 80vh;
             overflow-y: auto;
@@ -38,20 +33,18 @@
             background: #94a3b8;
             border-radius: 8px;
         }
-        /* تحسين عرض الفلاتر السريعة */
         .quick-filter-btn {
             transition: all 0.15s;
+            cursor: pointer;
         }
         .quick-filter-btn.active {
             background-color: #1e293b;
             color: white;
             border-color: #1e293b;
         }
-        /* تخصيص حقول البحث */
         .search-input {
             background-color: white;
         }
-        /* تنسيق الأزرار */
         .btn-preview {
             background-color: #eef2ff;
             color: #4338ca;
@@ -66,7 +59,6 @@
         .btn-download:hover {
             background-color: #0f172a;
         }
-        /* تخصيص الصور المؤقتة */
         .cover-placeholder {
             background: linear-gradient(145deg, #e2e8f0, #f1f5f9);
             display: flex;
@@ -77,343 +69,431 @@
             text-align: center;
             padding: 0.5rem;
         }
-        /* تحسين التجاوب */
         @media (max-width: 640px) {
             .sidebar-scroll {
                 max-height: 50vh;
             }
         }
+        /* لضمان ظهور النتائج عند عدم وجود كتب */
+        .no-results {
+            text-align: center;
+            padding: 3rem 1rem;
+            color: #64748b;
+        }
     </style>
 </head>
 <body>
 
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
 
-        <!-- ====== شريط البحث العلوي ====== -->
-        <header class="bg-white rounded-2xl shadow-md p-4 sm:p-6 mb-6 border border-gray-100">
-            <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-                <!-- الشعار / العنوان -->
-                <div class="flex items-center gap-3">
-                    <i class="fas fa-book-open text-3xl text-indigo-700"></i>
-                    <h1 class="text-2xl font-bold text-gray-800">مكتبة الأكاديميا</h1>
-                </div>
-                <!-- شريط البحث -->
-                <div class="flex-1 w-full md:max-w-xl">
-                    <div class="relative">
-                        <input type="text" placeholder="ابحث عن كتاب، مؤلف، ISBN..." 
-                               class="search-input w-full pr-10 pl-4 py-2.5 rounded-xl border border-gray-200 focus:border-indigo-400 focus:ring-2 focus:ring-indigo-200 outline-none transition" />
-                        <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
-                    </div>
-                </div>
-                <!-- فلاتر سريعة -->
-                <div class="flex flex-wrap gap-2">
-                    <button class="quick-filter-btn px-4 py-1.5 rounded-full border border-gray-200 text-sm font-medium text-gray-700 hover:bg-gray-100 transition active" data-filter="title">
-                        <i class="fas fa-heading ml-1"></i> العنوان
-                    </button>
-                    <button class="quick-filter-btn px-4 py-1.5 rounded-full border border-gray-200 text-sm font-medium text-gray-700 hover:bg-gray-100 transition" data-filter="author">
-                        <i class="fas fa-user ml-1"></i> المؤلف
-                    </button>
-                    <button class="quick-filter-btn px-4 py-1.5 rounded-full border border-gray-200 text-sm font-medium text-gray-700 hover:bg-gray-100 transition" data-filter="isbn">
-                        <i class="fas fa-barcode ml-1"></i> ISBN
-                    </button>
+    <!-- ====== شريط البحث العلوي ====== -->
+    <header class="bg-white rounded-2xl shadow-md p-4 sm:p-6 mb-6 border border-gray-100">
+        <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+            <div class="flex items-center gap-3">
+                <i class="fas fa-book-open text-3xl text-indigo-700"></i>
+                <h1 class="text-2xl font-bold text-gray-800">مكتبة الأكاديميا</h1>
+            </div>
+            <div class="flex-1 w-full md:max-w-xl">
+                <div class="relative">
+                    <input type="text" id="searchInput" placeholder="ابحث عن كتاب، مؤلف، ISBN..." 
+                           class="search-input w-full pr-10 pl-4 py-2.5 rounded-xl border border-gray-200 focus:border-indigo-400 focus:ring-2 focus:ring-indigo-200 outline-none transition" />
+                    <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
                 </div>
             </div>
-            <!-- نتائج سريعة أسفل البحث (اختياري) -->
-            <div class="mt-3 text-sm text-gray-500 flex flex-wrap items-center gap-4">
-                <span><i class="fas fa-table ml-1"></i> 12 نتيجة</span>
-                <span><i class="far fa-clock ml-1"></i> آخر تحديث: اليوم</span>
+            <div class="flex flex-wrap gap-2" id="quickFilters">
+                <button class="quick-filter-btn px-4 py-1.5 rounded-full border border-gray-200 text-sm font-medium text-gray-700 hover:bg-gray-100 transition active" data-filter="title">
+                    <i class="fas fa-heading ml-1"></i> العنوان
+                </button>
+                <button class="quick-filter-btn px-4 py-1.5 rounded-full border border-gray-200 text-sm font-medium text-gray-700 hover:bg-gray-100 transition" data-filter="author">
+                    <i class="fas fa-user ml-1"></i> المؤلف
+                </button>
+                <button class="quick-filter-btn px-4 py-1.5 rounded-full border border-gray-200 text-sm font-medium text-gray-700 hover:bg-gray-100 transition" data-filter="isbn">
+                    <i class="fas fa-barcode ml-1"></i> ISBN
+                </button>
             </div>
-        </header>
-
-        <!-- ====== المحتوى الرئيسي: شريط جانبي + نتائج ====== -->
-        <div class="flex flex-col lg:flex-row gap-6">
-
-            <!-- ====== الشريط الجانبي (فلاتر متقدمة) ====== -->
-            <aside class="lg:w-72 w-full bg-white rounded-2xl shadow-md p-5 border border-gray-100 sidebar-scroll">
-                <h2 class="text-lg font-bold text-gray-800 flex items-center gap-2 pb-3 border-b border-gray-100">
-                    <i class="fas fa-sliders-h text-indigo-600"></i> تصفية متقدمة
-                </h2>
-
-                <div class="space-y-5 mt-4">
-
-                    <!-- سنة النشر -->
-                    <div>
-                        <label class="block text-sm font-semibold text-gray-700 mb-1">سنة النشر</label>
-                        <div class="flex gap-2">
-                            <input type="number" placeholder="من" class="w-1/2 px-3 py-1.5 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-indigo-200 outline-none" />
-                            <input type="number" placeholder="إلى" class="w-1/2 px-3 py-1.5 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-indigo-200 outline-none" />
-                        </div>
-                    </div>
-
-                    <!-- لغة الكتاب -->
-                    <div>
-                        <label class="block text-sm font-semibold text-gray-700 mb-1">اللغة</label>
-                        <select class="w-full px-3 py-1.5 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-indigo-200 outline-none bg-white">
-                            <option>جميع اللغات</option>
-                            <option>العربية</option>
-                            <option>الإنجليزية</option>
-                            <option>الفرنسية</option>
-                            <option>الألمانية</option>
-                        </select>
-                    </div>
-
-                    <!-- نوع الإتاحة -->
-                    <div>
-                        <label class="block text-sm font-semibold text-gray-700 mb-1">نوع الإتاحة</label>
-                        <div class="flex flex-wrap gap-3">
-                            <label class="flex items-center gap-1.5 text-sm">
-                                <input type="checkbox" class="rounded border-gray-300 text-indigo-600 focus:ring-indigo-400" checked /> معاينة مجانية
-                            </label>
-                            <label class="flex items-center gap-1.5 text-sm">
-                                <input type="checkbox" class="rounded border-gray-300 text-indigo-600 focus:ring-indigo-400" /> نص كامل
-                            </label>
-                        </div>
-                    </div>
-
-                    <!-- تصنيف الكتاب -->
-                    <div>
-                        <label class="block text-sm font-semibold text-gray-700 mb-1">التصنيف</label>
-                        <select class="w-full px-3 py-1.5 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-indigo-200 outline-none bg-white">
-                            <option>جميع التصنيفات</option>
-                            <option>علوم حاسوب</option>
-                            <option>هندسة</option>
-                            <option>رياضيات</option>
-                            <option>فيزياء</option>
-                            <option>أدب</option>
-                            <option>تاريخ</option>
-                            <option>فلسفة</option>
-                        </select>
-                    </div>
-
-                    <!-- زر تطبيق الفلاتر -->
-                    <button class="w-full bg-indigo-700 hover:bg-indigo-800 text-white font-semibold py-2.5 rounded-xl transition shadow-sm">
-                        <i class="fas fa-filter ml-2"></i> تطبيق الفلاتر
-                    </button>
-                    <button class="w-full text-sm text-gray-500 hover:text-gray-700 underline-offset-2 underline mt-1">
-                        إعادة تعيين
-                    </button>
-                </div>
-            </aside>
-
-            <!-- ====== منطقة النتائج الرئيسية ====== -->
-            <main class="flex-1">
-
-                <!-- شريط أدوات النتائج (ترتيب، عرض) -->
-                <div class="flex flex-wrap items-center justify-between bg-white rounded-xl shadow-sm p-3 border border-gray-100 mb-5">
-                    <div class="flex items-center gap-3">
-                        <span class="text-sm font-medium text-gray-600">ترتيب حسب:</span>
-                        <select class="text-sm border border-gray-200 rounded-lg px-3 py-1.5 bg-white focus:ring-2 focus:ring-indigo-200 outline-none">
-                            <option>الأحدث</option>
-                            <option>الأقدم</option>
-                            <option>الأكثر صلة</option>
-                            <option>الأكثر تحميلاً</option>
-                        </select>
-                    </div>
-                    <div class="flex items-center gap-2">
-                        <button class="p-2 rounded-lg bg-indigo-50 text-indigo-700 border border-indigo-200"><i class="fas fa-th-large"></i></button>
-                        <button class="p-2 rounded-lg bg-gray-50 text-gray-500 border border-gray-200"><i class="fas fa-list-ul"></i></button>
-                    </div>
-                </div>
-
-                <!-- ====== بطاقات الكتب ====== -->
-                <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-5" id="booksGrid">
-                    <!-- سيتم إدراج البطاقات بواسطة JavaScript -->
-                </div>
-
-                <!-- ترقيم الصفحات (Pagination) -->
-                <div class="flex justify-center items-center gap-2 mt-8">
-                    <button class="px-4 py-2 rounded-lg border border-gray-200 bg-white text-gray-600 hover:bg-gray-50 transition"><i class="fas fa-chevron-right"></i></button>
-                    <button class="px-4 py-2 rounded-lg bg-indigo-700 text-white font-semibold">1</button>
-                    <button class="px-4 py-2 rounded-lg border border-gray-200 bg-white text-gray-600 hover:bg-gray-50 transition">2</button>
-                    <button class="px-4 py-2 rounded-lg border border-gray-200 bg-white text-gray-600 hover:bg-gray-50 transition">3</button>
-                    <button class="px-4 py-2 rounded-lg border border-gray-200 bg-white text-gray-600 hover:bg-gray-50 transition"><i class="fas fa-chevron-left"></i></button>
-                </div>
-
-            </main>
         </div>
+        <div class="mt-3 text-sm text-gray-500 flex flex-wrap items-center gap-4">
+            <span id="resultCount"><i class="fas fa-table ml-1"></i> 6 نتيجة</span>
+            <span><i class="far fa-clock ml-1"></i> آخر تحديث: اليوم</span>
+        </div>
+    </header>
 
-        <!-- تذييل بسيط -->
-        <footer class="mt-12 text-center text-sm text-gray-400 border-t border-gray-200 pt-6">
-            <p>© 2026 المكتبة الرقمية الأكاديمية — جميع الحقوق محفوظة</p>
-        </footer>
+    <!-- ====== المحتوى الرئيسي ====== -->
+    <div class="flex flex-col lg:flex-row gap-6">
+
+        <!-- ====== الشريط الجانبي ====== -->
+        <aside class="lg:w-72 w-full bg-white rounded-2xl shadow-md p-5 border border-gray-100 sidebar-scroll" id="sidebar">
+            <h2 class="text-lg font-bold text-gray-800 flex items-center gap-2 pb-3 border-b border-gray-100">
+                <i class="fas fa-sliders-h text-indigo-600"></i> تصفية متقدمة
+            </h2>
+
+            <div class="space-y-5 mt-4">
+                <!-- سنة النشر -->
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-1">سنة النشر</label>
+                    <div class="flex gap-2">
+                        <input type="number" id="yearFrom" placeholder="من" class="w-1/2 px-3 py-1.5 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-indigo-200 outline-none" />
+                        <input type="number" id="yearTo" placeholder="إلى" class="w-1/2 px-3 py-1.5 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-indigo-200 outline-none" />
+                    </div>
+                </div>
+
+                <!-- اللغة -->
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-1">اللغة</label>
+                    <select id="languageFilter" class="w-full px-3 py-1.5 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-indigo-200 outline-none bg-white">
+                        <option value="all">جميع اللغات</option>
+                        <option value="العربية">العربية</option>
+                        <option value="الإنجليزية">الإنجليزية</option>
+                        <option value="الفرنسية">الفرنسية</option>
+                        <option value="الألمانية">الألمانية</option>
+                    </select>
+                </div>
+
+                <!-- نوع الإتاحة -->
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-1">نوع الإتاحة</label>
+                    <div class="flex flex-wrap gap-3">
+                        <label class="flex items-center gap-1.5 text-sm">
+                            <input type="checkbox" id="chkPreview" class="rounded border-gray-300 text-indigo-600 focus:ring-indigo-400" checked /> معاينة مجانية
+                        </label>
+                        <label class="flex items-center gap-1.5 text-sm">
+                            <input type="checkbox" id="chkFulltext" class="rounded border-gray-300 text-indigo-600 focus:ring-indigo-400" /> نص كامل
+                        </label>
+                    </div>
+                </div>
+
+                <!-- التصنيف -->
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-1">التصنيف</label>
+                    <select id="categoryFilter" class="w-full px-3 py-1.5 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-indigo-200 outline-none bg-white">
+                        <option value="all">جميع التصنيفات</option>
+                        <option value="علوم حاسوب">علوم حاسوب</option>
+                        <option value="هندسة">هندسة</option>
+                        <option value="رياضيات">رياضيات</option>
+                        <option value="فيزياء">فيزياء</option>
+                        <option value="أدب">أدب</option>
+                        <option value="تاريخ">تاريخ</option>
+                        <option value="فلسفة">فلسفة</option>
+                    </select>
+                </div>
+
+                <button id="applyFiltersBtn" class="w-full bg-indigo-700 hover:bg-indigo-800 text-white font-semibold py-2.5 rounded-xl transition shadow-sm">
+                    <i class="fas fa-filter ml-2"></i> تطبيق الفلاتر
+                </button>
+                <button id="resetFiltersBtn" class="w-full text-sm text-gray-500 hover:text-gray-700 underline-offset-2 underline mt-1">
+                    إعادة تعيين
+                </button>
+            </div>
+        </aside>
+
+        <!-- ====== منطقة النتائج ====== -->
+        <main class="flex-1">
+
+            <!-- شريط أدوات النتائج -->
+            <div class="flex flex-wrap items-center justify-between bg-white rounded-xl shadow-sm p-3 border border-gray-100 mb-5">
+                <div class="flex items-center gap-3">
+                    <span class="text-sm font-medium text-gray-600">ترتيب حسب:</span>
+                    <select class="text-sm border border-gray-200 rounded-lg px-3 py-1.5 bg-white focus:ring-2 focus:ring-indigo-200 outline-none">
+                        <option>الأحدث</option>
+                        <option>الأقدم</option>
+                        <option>الأكثر صلة</option>
+                        <option>الأكثر تحميلاً</option>
+                    </select>
+                </div>
+                <div class="flex items-center gap-2">
+                    <button class="p-2 rounded-lg bg-indigo-50 text-indigo-700 border border-indigo-200"><i class="fas fa-th-large"></i></button>
+                    <button class="p-2 rounded-lg bg-gray-50 text-gray-500 border border-gray-200"><i class="fas fa-list-ul"></i></button>
+                </div>
+            </div>
+
+            <!-- شبكة البطاقات -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-5" id="booksGrid"></div>
+
+            <!-- ترقيم الصفحات (ثابت للعرض) -->
+            <div class="flex justify-center items-center gap-2 mt-8">
+                <button class="px-4 py-2 rounded-lg border border-gray-200 bg-white text-gray-600 hover:bg-gray-50 transition"><i class="fas fa-chevron-right"></i></button>
+                <button class="px-4 py-2 rounded-lg bg-indigo-700 text-white font-semibold">1</button>
+                <button class="px-4 py-2 rounded-lg border border-gray-200 bg-white text-gray-600 hover:bg-gray-50 transition">2</button>
+                <button class="px-4 py-2 rounded-lg border border-gray-200 bg-white text-gray-600 hover:bg-gray-50 transition">3</button>
+                <button class="px-4 py-2 rounded-lg border border-gray-200 bg-white text-gray-600 hover:bg-gray-50 transition"><i class="fas fa-chevron-left"></i></button>
+            </div>
+
+        </main>
     </div>
 
-    <!-- ====== بيانات الكتب الوهمية ====== -->
-    <script>
-        (function() {
-            // قائمة الكتب (بيانات وهمية)
-            const books = [{
-                id: 1,
-                title: "مقدمة في الذكاء الاصطناعي",
-                author: "د. أحمد المنصور",
-                isbn: "978-3-16-148410-0",
-                year: 2023,
-                language: "العربية",
-                category: "علوم حاسوب",
-                preview: true,
-                fulltext: false,
-                snippet: "يستعرض هذا الكتاب أساسيات الذكاء الاصطناعي وتطبيقاته في الحياة اليومية، مع أمثلة عملية على تعلم الآلة.",
-                cover: "https://picsum.photos/id/1/200/280"
-            }, {
-                id: 2,
-                title: "هندسة البرمجيات الحديثة",
-                author: "د. سارة الخالدي",
-                isbn: "978-0-13-235088-4",
-                year: 2022,
-                language: "العربية",
-                category: "هندسة",
-                preview: true,
-                fulltext: true,
-                snippet: "دليل شامل لمنهجيات تطوير البرمجيات المرنة، مع تغطية متعمقة لـ Agile و DevOps.",
-                cover: "https://picsum.photos/id/26/200/280"
-            }, {
-                id: 3,
-                title: "الفيزياء الكمية للمبتدئين",
-                author: "د. نادر فوزي",
-                isbn: "978-0-470-42433-7",
-                year: 2024,
-                language: "العربية",
-                category: "فيزياء",
-                preview: false,
-                fulltext: true,
-                snippet: "شرح مبسط لمفاهيم ميكانيكا الكم وازدواجية الموجة-الجسيم، مع رسوم توضيحية وتجارب ذهنية.",
-                cover: "https://picsum.photos/id/29/200/280"
-            }, {
-                id: 4,
-                title: "تحليل البيانات باستخدام Python",
-                author: "م. ليلى حسن",
-                isbn: "978-1-449-36941-9",
-                year: 2023,
-                language: "العربية",
-                category: "علوم حاسوب",
-                preview: true,
-                fulltext: false,
-                snippet: "يغطي هذا الكتاب مكتبات Pandas و NumPy و Matplotlib، مع مشاريع تطبيقية لتحليل بيانات حقيقية.",
-                cover: "https://picsum.photos/id/38/200/280"
-            }, {
-                id: 5,
-                title: "تاريخ الفلسفة الغربية",
-                author: "د. رامي الحكيم",
-                isbn: "978-0-14-311329-7",
-                year: 2021,
-                language: "العربية",
-                category: "فلسفة",
-                preview: true,
-                fulltext: true,
-                snippet: "رحلة عبر تطور الفكر الفلسفي من الإغريق إلى العصر الحديث، مع تحليل نقدي لأهم المدارس.",
-                cover: "https://picsum.photos/id/53/200/280"
-            }, {
-                id: 6,
-                title: "الأدب العربي في العصر العباسي",
-                author: "أ. أمل السعدي",
-                isbn: "978-9953-88-201-5",
-                year: 2020,
-                language: "العربية",
-                category: "أدب",
-                preview: false,
-                fulltext: false,
-                snippet: "دراسة معمقة للشعر والنثر في العصر العباسي، مع نماذج من المعلقات والمقامات.",
-                cover: "https://picsum.photos/id/62/200/280"
-            }];
+    <footer class="mt-12 text-center text-sm text-gray-400 border-t border-gray-200 pt-6">
+        <p>© 2026 المكتبة الرقمية الأكاديمية — جميع الحقوق محفوظة</p>
+    </footer>
+</div>
 
-            // دالة لإنشاء بطاقة كتاب
-            function createBookCard(book) {
-                const card = document.createElement('div');
-                card.className = 'book-card bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden flex flex-col h-full transition-all';
+<script>
+    (function() {
+        // ===== البيانات =====
+        const booksData = [{
+            id: 1,
+            title: "مقدمة في الذكاء الاصطناعي",
+            author: "د. أحمد المنصور",
+            isbn: "978-3-16-148410-0",
+            year: 2023,
+            language: "العربية",
+            category: "علوم حاسوب",
+            preview: true,
+            fulltext: false,
+            snippet: "يستعرض هذا الكتاب أساسيات الذكاء الاصطناعي وتطبيقاته في الحياة اليومية، مع أمثلة عملية على تعلم الآلة.",
+            cover: "https://picsum.photos/id/1/200/280"
+        }, {
+            id: 2,
+            title: "هندسة البرمجيات الحديثة",
+            author: "د. سارة الخالدي",
+            isbn: "978-0-13-235088-4",
+            year: 2022,
+            language: "العربية",
+            category: "هندسة",
+            preview: true,
+            fulltext: true,
+            snippet: "دليل شامل لمنهجيات تطوير البرمجيات المرنة، مع تغطية متعمقة لـ Agile و DevOps.",
+            cover: "https://picsum.photos/id/26/200/280"
+        }, {
+            id: 3,
+            title: "الفيزياء الكمية للمبتدئين",
+            author: "د. نادر فوزي",
+            isbn: "978-0-470-42433-7",
+            year: 2024,
+            language: "العربية",
+            category: "فيزياء",
+            preview: false,
+            fulltext: true,
+            snippet: "شرح مبسط لمفاهيم ميكانيكا الكم وازدواجية الموجة-الجسيم، مع رسوم توضيحية وتجارب ذهنية.",
+            cover: "https://picsum.photos/id/29/200/280"
+        }, {
+            id: 4,
+            title: "تحليل البيانات باستخدام Python",
+            author: "م. ليلى حسن",
+            isbn: "978-1-449-36941-9",
+            year: 2023,
+            language: "العربية",
+            category: "علوم حاسوب",
+            preview: true,
+            fulltext: false,
+            snippet: "يغطي هذا الكتاب مكتبات Pandas و NumPy و Matplotlib، مع مشاريع تطبيقية لتحليل بيانات حقيقية.",
+            cover: "https://picsum.photos/id/38/200/280"
+        }, {
+            id: 5,
+            title: "تاريخ الفلسفة الغربية",
+            author: "د. رامي الحكيم",
+            isbn: "978-0-14-311329-7",
+            year: 2021,
+            language: "العربية",
+            category: "فلسفة",
+            preview: true,
+            fulltext: true,
+            snippet: "رحلة عبر تطور الفكر الفلسفي من الإغريق إلى العصر الحديث، مع تحليل نقدي لأهم المدارس.",
+            cover: "https://picsum.photos/id/53/200/280"
+        }, {
+            id: 6,
+            title: "الأدب العربي في العصر العباسي",
+            author: "أ. أمل السعدي",
+            isbn: "978-9953-88-201-5",
+            year: 2020,
+            language: "العربية",
+            category: "أدب",
+            preview: false,
+            fulltext: false,
+            snippet: "دراسة معمقة للشعر والنثر في العصر العباسي، مع نماذج من المعلقات والمقامات.",
+            cover: "https://picsum.photos/id/62/200/280"
+        }];
 
-                // صورة الغلاف (مع fallback)
-                const coverDiv = document.createElement('div');
-                coverDiv.className = 'h-48 bg-gray-100 overflow-hidden flex items-center justify-center relative';
-                const img = document.createElement('img');
-                img.src = book.cover;
-                img.alt = `غلاف كتاب ${book.title}`;
-                img.className = 'w-full h-full object-cover';
-                img.onerror = function() {
-                    this.style.display = 'none';
-                    const fallback = document.createElement('div');
-                    fallback.className = 'cover-placeholder w-full h-full flex flex-col items-center justify-center text-gray-400';
-                    fallback.innerHTML = `<i class="fas fa-book text-4xl"></i><span class="mt-1 text-xs">لا توجد صورة</span>`;
-                    this.parentNode.appendChild(fallback);
-                };
-                coverDiv.appendChild(img);
+        // ===== المراجع =====
+        const grid = document.getElementById('booksGrid');
+        const searchInput = document.getElementById('searchInput');
+        const quickFilterBtns = document.querySelectorAll('.quick-filter-btn');
+        const resultCountSpan = document.getElementById('resultCount');
+        const yearFrom = document.getElementById('yearFrom');
+        const yearTo = document.getElementById('yearTo');
+        const languageFilter = document.getElementById('languageFilter');
+        const chkPreview = document.getElementById('chkPreview');
+        const chkFulltext = document.getElementById('chkFulltext');
+        const categoryFilter = document.getElementById('categoryFilter');
+        const applyBtn = document.getElementById('applyFiltersBtn');
+        const resetBtn = document.getElementById('resetFiltersBtn');
 
-                // المحتوى النصي
-                const body = document.createElement('div');
-                body.className = 'p-4 flex flex-col flex-grow';
+        // الحقل النشط للبحث السريع (افتراضي: العنوان)
+        let activeSearchField = 'title';
 
-                // العنوان
-                const title = document.createElement('h3');
-                title.className = 'text-lg font-bold text-gray-800 line-clamp-2 leading-tight';
-                title.textContent = book.title;
+        // ===== دالة إنشاء بطاقة =====
+        function createBookCard(book) {
+            const card = document.createElement('div');
+            card.className = 'book-card bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden flex flex-col h-full transition-all';
 
-                // المؤلف
-                const author = document.createElement('p');
-                author.className = 'text-sm text-indigo-600 font-medium mt-1 flex items-center gap-1';
-                author.innerHTML = `<i class="fas fa-user-pen text-xs"></i> ${book.author}`;
+            const coverDiv = document.createElement('div');
+            coverDiv.className = 'h-48 bg-gray-100 overflow-hidden flex items-center justify-center relative';
+            const img = document.createElement('img');
+            img.src = book.cover;
+            img.alt = `غلاف كتاب ${book.title}`;
+            img.className = 'w-full h-full object-cover';
+            img.onerror = function() {
+                this.style.display = 'none';
+                const fallback = document.createElement('div');
+                fallback.className = 'cover-placeholder w-full h-full flex flex-col items-center justify-center text-gray-400';
+                fallback.innerHTML = `<i class="fas fa-book text-4xl"></i><span class="mt-1 text-xs">لا توجد صورة</span>`;
+                this.parentNode.appendChild(fallback);
+            };
+            coverDiv.appendChild(img);
 
-                // المقتطف النصي
-                const snippet = document.createElement('p');
-                snippet.className = 'text-sm text-gray-600 mt-2 leading-relaxed line-clamp-3 flex-grow';
-                snippet.textContent = book.snippet;
+            const body = document.createElement('div');
+            body.className = 'p-4 flex flex-col flex-grow';
 
-                // معلومات إضافية (سنة، لغة، تصنيف)
-                const meta = document.createElement('div');
-                meta.className = 'flex flex-wrap gap-2 mt-2 text-xs text-gray-500';
-                meta.innerHTML = `
-                            <span class="bg-gray-100 px-2 py-1 rounded-full"><i class="far fa-calendar-alt ml-1"></i>${book.year}</span>
-                            <span class="bg-gray-100 px-2 py-1 rounded-full"><i class="fas fa-globe ml-1"></i>${book.language}</span>
-                            <span class="bg-gray-100 px-2 py-1 rounded-full"><i class="fas fa-tag ml-1"></i>${book.category}</span>
-                        `;
+            const title = document.createElement('h3');
+            title.className = 'text-lg font-bold text-gray-800 line-clamp-2 leading-tight';
+            title.textContent = book.title;
 
-                // الأزرار (معاينة / تحميل)
-                const actions = document.createElement('div');
-                actions.className = 'flex gap-2 mt-4 pt-3 border-t border-gray-100';
+            const author = document.createElement('p');
+            author.className = 'text-sm text-indigo-600 font-medium mt-1 flex items-center gap-1';
+            author.innerHTML = `<i class="fas fa-user-pen text-xs"></i> ${book.author}`;
 
-                const previewBtn = document.createElement('button');
-                previewBtn.className = 'flex-1 btn-preview text-sm font-medium py-2 rounded-lg transition flex items-center justify-center gap-1.5';
-                previewBtn.innerHTML = `<i class="fas fa-eye"></i> معاينة`;
-                previewBtn.onclick = () => alert(`معاينة: ${book.title}`);
+            const snippet = document.createElement('p');
+            snippet.className = 'text-sm text-gray-600 mt-2 leading-relaxed line-clamp-3 flex-grow';
+            snippet.textContent = book.snippet;
 
-                const downloadBtn = document.createElement('button');
-                downloadBtn.className = 'flex-1 btn-download text-sm font-medium py-2 rounded-lg transition flex items-center justify-center gap-1.5';
-                downloadBtn.innerHTML = `<i class="fas fa-file-pdf"></i> تحميل PDF`;
-                downloadBtn.onclick = () => alert(`تحميل PDF: ${book.title}`);
+            const meta = document.createElement('div');
+            meta.className = 'flex flex-wrap gap-2 mt-2 text-xs text-gray-500';
+            meta.innerHTML = `
+                        <span class="bg-gray-100 px-2 py-1 rounded-full"><i class="far fa-calendar-alt ml-1"></i>${book.year}</span>
+                        <span class="bg-gray-100 px-2 py-1 rounded-full"><i class="fas fa-globe ml-1"></i>${book.language}</span>
+                        <span class="bg-gray-100 px-2 py-1 rounded-full"><i class="fas fa-tag ml-1"></i>${book.category}</span>
+                    `;
 
-                actions.appendChild(previewBtn);
-                actions.appendChild(downloadBtn);
+            const actions = document.createElement('div');
+            actions.className = 'flex gap-2 mt-4 pt-3 border-t border-gray-100';
 
-                // تجميع الأجزاء
-                body.appendChild(title);
-                body.appendChild(author);
-                body.appendChild(snippet);
-                body.appendChild(meta);
-                body.appendChild(actions);
+            const previewBtn = document.createElement('button');
+            previewBtn.className = 'flex-1 btn-preview text-sm font-medium py-2 rounded-lg transition flex items-center justify-center gap-1.5';
+            previewBtn.innerHTML = `<i class="fas fa-eye"></i> معاينة`;
+            previewBtn.onclick = () => alert(`معاينة: ${book.title}`);
 
-                card.appendChild(coverDiv);
-                card.appendChild(body);
+            const downloadBtn = document.createElement('button');
+            downloadBtn.className = 'flex-1 btn-download text-sm font-medium py-2 rounded-lg transition flex items-center justify-center gap-1.5';
+            downloadBtn.innerHTML = `<i class="fas fa-file-pdf"></i> تحميل PDF`;
+            downloadBtn.onclick = () => alert(`تحميل PDF: ${book.title}`);
 
-                return card;
+            actions.appendChild(previewBtn);
+            actions.appendChild(downloadBtn);
+
+            body.appendChild(title);
+            body.appendChild(author);
+            body.appendChild(snippet);
+            body.appendChild(meta);
+            body.appendChild(actions);
+
+            card.appendChild(coverDiv);
+            card.appendChild(body);
+            return card;
+        }
+
+        // ===== دالة عرض الكتب =====
+        function renderBooks(books) {
+            grid.innerHTML = '';
+            if (books.length === 0) {
+                grid.innerHTML = `<div class="col-span-full no-results"><i class="fas fa-search text-4xl mb-3"></i><p class="text-lg font-medium">لا توجد كتب تطابق معايير البحث</p><p class="text-sm">حاول تعديل كلمات البحث أو الفلاتر</p></div>`;
+                resultCountSpan.innerHTML = `<i class="fas fa-table ml-1"></i> 0 نتيجة`;
+                return;
             }
+            books.forEach(book => {
+                grid.appendChild(createBookCard(book));
+            });
+            resultCountSpan.innerHTML = `<i class="fas fa-table ml-1"></i> ${books.length} نتيجة`;
+        }
 
-            // إدراج البطاقات في الشبكة
-            const grid = document.getElementById('booksGrid');
-            if (grid) {
-                books.forEach(book => {
-                    grid.appendChild(createBookCard(book));
-                });
-            }
+        // ===== دالة التصفية الأساسية =====
+        function filterBooks() {
+            const query = searchInput.value.trim().toLowerCase();
+            const field = activeSearchField; // 'title', 'author', 'isbn'
 
-            // تفعيل أزرار الفلاتر السريعة (تبديل النمط النشط)
-            document.querySelectorAll('.quick-filter-btn').forEach(btn => {
-                btn.addEventListener('click', function() {
-                    document.querySelectorAll('.quick-filter-btn').forEach(b => b.classList.remove('active'));
-                    this.classList.add('active');
-                    // يمكن إضافة منطق فعلي للتصفية هنا
-                });
+            // قراءة الفلاتر المتقدمة
+            const fromYear = parseInt(yearFrom.value) || 0;
+            const toYear = parseInt(yearTo.value) || 9999;
+            const lang = languageFilter.value;
+            const category = categoryFilter.value;
+            const previewChecked = chkPreview.checked;
+            const fulltextChecked = chkFulltext.checked;
+
+            // تصفية
+            let filtered = booksData.filter(book => {
+                // البحث السريع (حسب الحقل النشط)
+                let matchQuick = true;
+                if (query !== '') {
+                    if (field === 'title') matchQuick = book.title.toLowerCase().includes(query);
+                    else if (field === 'author') matchQuick = book.author.toLowerCase().includes(query);
+                    else if (field === 'isbn') matchQuick = book.isbn.toLowerCase().includes(query);
+                }
+
+                // الفلاتر المتقدمة
+                let matchAdvanced = true;
+                if (book.year < fromYear || book.year > toYear) matchAdvanced = false;
+                if (lang !== 'all' && book.language !== lang) matchAdvanced = false;
+                if (category !== 'all' && book.category !== category) matchAdvanced = false;
+                // الإتاحة: إذا كان كلا الخيارين غير محددين، نظهر جميع الكتب (بدون فلتر)
+                if (previewChecked && fulltextChecked) {
+                    // كلاهما محدد: نعرض كل الكتب (لأن الشرط سيصبح true دائماً)
+                } else if (previewChecked && !fulltextChecked) {
+                    if (!book.preview) matchAdvanced = false;
+                } else if (!previewChecked && fulltextChecked) {
+                    if (!book.fulltext) matchAdvanced = false;
+                } else {
+                    // لا شيء محدد: نظهر الكل (يعامل كعدم تحديد)
+                }
+
+                return matchQuick && matchAdvanced;
             });
 
-        })();
-    </script>
+            renderBooks(filtered);
+        }
+
+        // ===== ربط الأحداث =====
+
+        // 1. البحث عند الكتابة
+        searchInput.addEventListener('input', filterBooks);
+
+        // 2. أزرار الفلاتر السريعة (تغيير الحقل النشط)
+        quickFilterBtns.forEach(btn => {
+            btn.addEventListener('click', function() {
+                quickFilterBtns.forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+                activeSearchField = this.dataset.filter;
+                filterBooks(); // إعادة التصفية بناءً على الحقل الجديد
+            });
+        });
+
+        // 3. زر تطبيق الفلاتر
+        applyBtn.addEventListener('click', filterBooks);
+
+        // 4. زر إعادة تعيين
+        resetBtn.addEventListener('click', function() {
+            // إعادة تعيين جميع الفلاتر
+            yearFrom.value = '';
+            yearTo.value = '';
+            languageFilter.value = 'all';
+            categoryFilter.value = 'all';
+            chkPreview.checked = true;
+            chkFulltext.checked = false;
+            searchInput.value = '';
+            // إعادة تعيين الحقل النشط إلى "العنوان"
+            quickFilterBtns.forEach(b => b.classList.remove('active'));
+            document.querySelector('.quick-filter-btn[data-filter="title"]').classList.add('active');
+            activeSearchField = 'title';
+            filterBooks();
+        });
+
+        // 5. دعم الضغط على Enter في حقل البحث (تطبيق الفلاتر أيضاً)
+        searchInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') filterBooks();
+        });
+
+        // ===== العرض الأولي =====
+        renderBooks(booksData);
+
+    })();
+</script>
 
 </body>
 </html>
