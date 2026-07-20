@@ -3,140 +3,626 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>محرك البحث العالمي المتقدم للكتب</title>
-    <!-- Tailwind CSS للتصميم العصري والسريع -->
-    <script src="https://jsdelivr.net"></script>
-    <link href="https://googleapis.com" rel="stylesheet">
+    <title>المحرك العالمي للبحث عن الكتب والمراجع</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome للأيقونات -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <!-- خط Google (Cairo) -->
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap" rel="stylesheet">
     <style>
-        body { font-family: 'Cairo', sans-serif; }
+        body {
+            font-family: 'Cairo', sans-serif;
+            background-color: #f8fafc;
+        }
+        /* تنسيقات البطاقات */
+        .book-card {
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .book-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+        /* تنسيق الشريط الجانبي */
+        .sidebar-scroll {
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+        .sidebar-scroll::-webkit-scrollbar {
+            width: 6px;
+        }
+        .sidebar-scroll::-webkit-scrollbar-track {
+            background: #e2e8f0;
+            border-radius: 8px;
+        }
+        .sidebar-scroll::-webkit-scrollbar-thumb {
+            background: #94a3b8;
+            border-radius: 8px;
+        }
+        /* تنسيقات الدليل التعليمي */
+        .dir-tab-btn {
+            transition: all 0.2s;
+        }
+        .dir-tab-btn.active {
+            background: linear-gradient(to right, #059669, #0d9488);
+            color: white;
+            box-shadow: 0 4px 12px rgba(5, 150, 105, 0.4);
+        }
+        .dir-tab-btn:not(.active) {
+            background: transparent;
+            color: #9ca3af;
+        }
+        .dir-tab-btn:not(.active):hover {
+            background: rgba(255, 255, 255, 0.05);
+            color: #f3f4f6;
+        }
+        .directory-section {
+            background: #0f172a;
+            border-radius: 2rem;
+        }
+        .glass-card {
+            background: rgba(30, 41, 59, 0.6);
+            backdrop-filter: blur(4px);
+        }
+        .glass-card:hover {
+            border-color: #10b981;
+        }
+        /* تحسين شريط البحث العلوي */
+        .search-header {
+            background: linear-gradient(135deg, #1e3a8a, #4f46e5);
+        }
+        /* تأثير التحميل */
+        .loader-spinner {
+            border: 4px solid rgba(255,255,255,0.2);
+            border-top-color: #fbbf24;
+            border-radius: 50%;
+            width: 2.5rem;
+            height: 2.5rem;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
     </style>
 </head>
-<body class="bg-gray-50 text-gray-800 min-h-screen flex flex-col">
+<body class="min-h-screen flex flex-col">
 
-    <!-- الرأس وشريط البحث المتقدم (مستوحى من بحث Google المتقدم) -->
-    <header class="bg-gradient-to-r from-blue-700 to-indigo-800 text-white shadow-lg p-6">
-        <div class="max-w-6xl mx-auto">
-            <h1 class="text-2xl font-bold text-center mb-6">🔍 المحرك العالمي للبحث عن الكتب والمراجع</h1>
-            
-            <form id="searchForm" class="space-y-4 bg-white/10 p-4 rounded-xl backdrop-blur-md">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 w-full">
+
+        <!-- ====== شريط البحث العلوي (مستوحى من Google) ====== -->
+        <header class="search-header rounded-2xl shadow-lg p-6 mb-6 text-white">
+            <h1 class="text-2xl md:text-3xl font-bold text-center mb-4 flex items-center justify-center gap-2">
+                <i class="fas fa-globe-asia"></i> المحرك العالمي للبحث عن الكتب والمراجع
+            </h1>
+
+            <form id="searchForm" class="space-y-4 bg-white/10 p-4 rounded-xl backdrop-blur-sm">
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <input type="text" id="query" placeholder="اسم الكتاب أو الكلمات المفتاحية..." class="w-full p-3 rounded-lg bg-white text-gray-900 border-none focus:ring-2 focus:ring-blue-400 placeholder-gray-500" required>
-                    <input type="text" id="author" placeholder="اسم المؤلف (اختياري)..." class="w-full p-3 rounded-lg bg-white text-gray-900 border-none focus:ring-2 focus:ring-blue-400 placeholder-gray-500">
-                    <select id="lang" class="w-full p-3 rounded-lg bg-white text-gray-900 border-none focus:ring-2 focus:ring-blue-400">
-                        <option value="">كل اللغات</option>
-                        <option value="ar">اللغة العربية</option>
-                        <option value="en">اللغة الإنجليزية</option>
-                        <option value="fr">اللغة الفرنسية</option>
-                    </select>
+                    <div class="relative">
+                        <i class="fas fa-book absolute right-3 top-3 text-gray-400"></i>
+                        <input type="text" id="query" placeholder="عنوان الكتاب أو الكلمات المفتاحية..." 
+                               class="w-full p-3 pr-10 rounded-lg bg-white text-gray-900 border-none focus:ring-2 focus:ring-yellow-400 placeholder-gray-500" required>
+                    </div>
+                    <div class="relative">
+                        <i class="fas fa-user-pen absolute right-3 top-3 text-gray-400"></i>
+                        <input type="text" id="author" placeholder="اسم المؤلف (اختياري)..." 
+                               class="w-full p-3 pr-10 rounded-lg bg-white text-gray-900 border-none focus:ring-2 focus:ring-yellow-400 placeholder-gray-500">
+                    </div>
+                    <div class="relative">
+                        <i class="fas fa-language absolute right-3 top-3 text-gray-400"></i>
+                        <select id="lang" class="w-full p-3 pr-10 rounded-lg bg-white text-gray-900 border-none focus:ring-2 focus:ring-yellow-400 appearance-none">
+                            <option value="">كل اللغات</option>
+                            <option value="ar">العربية</option>
+                            <option value="en">الإنجليزية</option>
+                            <option value="fr">الفرنسية</option>
+                            <option value="de">الألمانية</option>
+                            <option value="es">الإسبانية</option>
+                        </select>
+                        <i class="fas fa-chevron-down absolute left-3 top-3 text-gray-400"></i>
+                    </div>
                 </div>
-                <button type="submit" class="w-full bg-yellow-500 hover:bg-yellow-600 text-blue-950 font-bold p-3 rounded-lg transition duration-300 shadow">ابحث في الشبكة العالمية</button>
+                <button type="submit" class="w-full bg-yellow-500 hover:bg-yellow-600 text-blue-950 font-bold p-3 rounded-lg transition duration-300 shadow-lg flex items-center justify-center gap-2">
+                    <i class="fas fa-search"></i> ابحث في الشبكة العالمية
+                </button>
             </form>
+        </header>
+
+        <!-- ====== المحتوى الرئيسي (شريط جانبي + نتائج) ====== -->
+        <div class="flex flex-col lg:flex-row gap-6">
+
+            <!-- ====== الشريط الجانبي (فلاتر متقدمة) ====== -->
+            <aside class="lg:w-72 w-full bg-white rounded-2xl shadow-md p-5 border border-gray-100 sidebar-scroll">
+                <h2 class="text-lg font-bold text-gray-800 flex items-center gap-2 pb-3 border-b border-gray-100">
+                    <i class="fas fa-sliders-h text-indigo-600"></i> تصفية متقدمة
+                </h2>
+
+                <div class="space-y-5 mt-4">
+                    <!-- سنة النشر -->
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-1">سنة النشر</label>
+                        <div class="flex gap-2">
+                            <input type="number" id="yearFrom" placeholder="من" class="w-1/2 px-3 py-1.5 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-indigo-200 outline-none" />
+                            <input type="number" id="yearTo" placeholder="إلى" class="w-1/2 px-3 py-1.5 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-indigo-200 outline-none" />
+                        </div>
+                    </div>
+
+                    <!-- اللغة (تزامن مع القائمة المنسدلة في الأعلى) -->
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-1">اللغة</label>
+                        <select id="sidebarLang" class="w-full px-3 py-1.5 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-indigo-200 outline-none bg-white">
+                            <option value="">جميع اللغات</option>
+                            <option value="ar">العربية</option>
+                            <option value="en">الإنجليزية</option>
+                            <option value="fr">الفرنسية</option>
+                            <option value="de">الألمانية</option>
+                            <option value="es">الإسبانية</option>
+                        </select>
+                    </div>
+
+                    <!-- نوع الإتاحة (لا يدعمها API، لكن نتركها للشكل) -->
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-1">نوع الإتاحة</label>
+                        <div class="flex flex-wrap gap-3">
+                            <label class="flex items-center gap-1.5 text-sm">
+                                <input type="checkbox" id="chkPreview" class="rounded border-gray-300 text-indigo-600 focus:ring-indigo-400" checked /> معاينة مجانية
+                            </label>
+                            <label class="flex items-center gap-1.5 text-sm">
+                                <input type="checkbox" id="chkFulltext" class="rounded border-gray-300 text-indigo-600 focus:ring-indigo-400" /> نص كامل
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- تصنيف (غير مدعوم من API، نتركه للشكل) -->
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-1">التصنيف</label>
+                        <select id="categoryFilter" class="w-full px-3 py-1.5 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-indigo-200 outline-none bg-white">
+                            <option value="all">جميع التصنيفات</option>
+                            <option value="computers">علوم حاسوب</option>
+                            <option value="engineering">هندسة</option>
+                            <option value="mathematics">رياضيات</option>
+                            <option value="physics">فيزياء</option>
+                            <option value="literature">أدب</option>
+                            <option value="history">تاريخ</option>
+                            <option value="philosophy">فلسفة</option>
+                        </select>
+                    </div>
+
+                    <button id="applyFiltersBtn" class="w-full bg-indigo-700 hover:bg-indigo-800 text-white font-semibold py-2.5 rounded-xl transition shadow-sm">
+                        <i class="fas fa-filter ml-2"></i> تطبيق الفلاتر
+                    </button>
+                    <button id="resetFiltersBtn" class="w-full text-sm text-gray-500 hover:text-gray-700 underline-offset-2 underline mt-1">
+                        إعادة تعيين
+                    </button>
+                </div>
+            </aside>
+
+            <!-- ====== منطقة النتائج ====== -->
+            <main class="flex-1">
+
+                <!-- شريط أدوات النتائج -->
+                <div class="flex flex-wrap items-center justify-between bg-white rounded-xl shadow-sm p-3 border border-gray-100 mb-5">
+                    <div class="flex items-center gap-3">
+                        <span class="text-sm font-medium text-gray-600">ترتيب حسب:</span>
+                        <select id="sortOrder" class="text-sm border border-gray-200 rounded-lg px-3 py-1.5 bg-white focus:ring-2 focus:ring-indigo-200 outline-none">
+                            <option value="relevance">الأكثر صلة</option>
+                            <option value="newest">الأحدث</option>
+                        </select>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <span id="resultCount" class="text-sm text-gray-500"><i class="fas fa-table ml-1"></i> 0 نتيجة</span>
+                    </div>
+                </div>
+
+                <!-- مؤشر التحميل -->
+                <div id="loader" class="hidden text-center my-10">
+                    <div class="loader-spinner mx-auto"></div>
+                    <p class="text-gray-500 mt-2">جاري الاتصال بقواعد البيانات العالمية...</p>
+                </div>
+
+                <!-- رسالة الحالة -->
+                <div id="statusMessage" class="text-center text-gray-500 my-10 text-lg">أدخل كلمات البحث في الأعلى لتبدأ الاستكشاف.</div>
+
+                <!-- شبكة عرض الكتب -->
+                <div id="resultsGrid" class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-5"></div>
+
+                <!-- ترقيم الصفحات (سيتم تفعيله لاحقاً) -->
+                <div id="pagination" class="flex justify-center items-center gap-2 mt-8 hidden">
+                    <button id="prevPage" class="px-4 py-2 rounded-lg border border-gray-200 bg-white text-gray-600 hover:bg-gray-50 transition"><i class="fas fa-chevron-right"></i></button>
+                    <span id="pageInfo" class="text-sm text-gray-600"></span>
+                    <button id="nextPage" class="px-4 py-2 rounded-lg border border-gray-200 bg-white text-gray-600 hover:bg-gray-50 transition"><i class="fas fa-chevron-left"></i></button>
+                </div>
+
+            </main>
         </div>
-    </header>
 
-    <!-- منطقة عرض النتائج (مستوحاة من Zohra-PDF) -->
-    <main class="flex-grow max-w-7xl mx-auto w-full p-6">
-        <!-- مؤشر التحميل -->
-        <div id="loader" class="hidden text-center my-10">
-            <div class="animate-spin inline-block w-10 h-10 border-4 border-blue-600 border-t-transparent rounded-full"></div>
-            <p class="text-gray-500 mt-2">جاري الاتصال بقواعد البيانات العالمية...</p>
+        <!-- ====== دليل الكتّاب والمؤلفين العرب (مرجع) ====== -->
+        <div class="max-w-6xl mx-auto px-4 my-16 space-y-6">
+            <div class="flex items-center gap-2 border-b border-gray-300 pb-4">
+                <i class="fa-solid fa-feather-pointed text-indigo-600 text-xl"></i>
+                <h2 class="text-xl font-bold text-gray-800">دليل الكتّاب والمؤلفين العرب</h2>
+            </div>
+            <p class="text-gray-600">هنا يمكن عرض قائمة بالكتّاب والمؤلفين العرب (يمكنك إضافة محتوى حسب رغبتك).</p>
         </div>
 
-        <!-- رسالة الخطأ أو عدم وجود نتائج -->
-        <div id="statusMessage" class="text-center text-gray-500 my-10 text-lg">أدخل كلمات البحث في الأعلى لتبدأ الاستكشاف.</div>
+        <!-- ====== القسم المطلوب: الدليل التعليمي والمكتبات البحثية ====== -->
+        <div class="directory-section max-w-6xl mx-auto px-4 py-8 my-8 space-y-6 shadow-2xl">
+            <div class="flex items-center gap-2 border-b border-gray-700 pb-4">
+                <i class="fa-solid fa-graduation-cap text-emerald-400 text-xl"></i>
+                <h2 class="text-xl font-bold text-white">الدليل التعليمي والمكتبات البحثية</h2>
+            </div>
 
-        <!-- شبكة عرض الكتب -->
-        <div id="resultsGrid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6"></div>
-    </main>
+            <!-- أزرار التبويب -->
+            <div class="grid grid-cols-3 gap-3 max-w-2xl mx-auto p-1.5 rounded-2xl bg-gray-800/30 border border-gray-700/50 backdrop-blur-md">
+                <button onclick="switchDirectory('schools')" id="btn-schools" class="dir-tab-btn py-3 px-4 rounded-xl text-xs sm:text-sm font-bold bg-gradient-to-r from-emerald-600 to-teal-600 text-white shadow-lg transition duration-200 flex items-center justify-center gap-2 active">
+                    <i class="fa-solid fa-school"></i> المدارس
+                </button>
+                <button onclick="switchDirectory('universities')" id="btn-universities" class="dir-tab-btn py-3 px-4 rounded-xl text-xs sm:text-sm font-bold text-gray-400 hover:bg-gray-800 hover:text-white transition duration-200 flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-building-columns"></i> الجامعات
+                </button>
+                <button onclick="switchDirectory('libraries')" id="btn-libraries" class="dir-tab-btn py-3 px-4 rounded-xl text-xs sm:text-sm font-bold text-gray-400 hover:bg-gray-800 hover:text-white transition duration-200 flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-book-shelves"></i> المكتبات
+                </button>
+            </div>
 
-    <!-- تذييل الصفحة -->
-    <footer class="bg-gray-900 text-gray-400 text-center p-4 text-sm mt-10">
-        متصل شبكياً مع Google Books API و Open Library المفتوحة.
-    </footer>
+            <!-- شبكة البطاقات -->
+            <div id="directoryGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 pt-4">
+                <!-- سيتم تعبئتها بواسطة JavaScript -->
+            </div>
+        </div>
 
-    <!-- نظام تشغيل المحرك وربطه بالشبكات العالمية -->
+        <!-- ====== تذييل الصفحة ====== -->
+        <footer class="mt-12 text-center text-sm text-gray-400 border-t border-gray-200 pt-6">
+            <p>© 2026 المحرك العالمي للكتب — متصل بـ Google Books API و Open Library</p>
+        </footer>
+    </div>
+
+    <!-- ====== JavaScript الموحد ====== -->
     <script>
-        document.getElementById('searchForm').addEventListener('submit', function(e) {
-            e.preventDefault();
-            performGlobalSearch();
-        });
+        (function() {
 
-        async function performGlobalSearch() {
-            const query = document.getElementById('query').value;
-            const author = document.getElementById('author').value;
-            const lang = document.getElementById('lang').value;
-            
-            const grid = document.getElementById('resultsGrid');
+            // =============================================
+            // 1. محرك البحث العالمي (Google Books API)
+            // =============================================
+
+            const searchForm = document.getElementById('searchForm');
+            const queryInput = document.getElementById('query');
+            const authorInput = document.getElementById('author');
+            const langSelect = document.getElementById('lang');
+            const sidebarLang = document.getElementById('sidebarLang');
+            const yearFrom = document.getElementById('yearFrom');
+            const yearTo = document.getElementById('yearTo');
+            const chkPreview = document.getElementById('chkPreview');
+            const chkFulltext = document.getElementById('chkFulltext');
+            const categoryFilter = document.getElementById('categoryFilter');
+            const applyBtn = document.getElementById('applyFiltersBtn');
+            const resetBtn = document.getElementById('resetFiltersBtn');
+            const sortOrder = document.getElementById('sortOrder');
+
+            const resultsGrid = document.getElementById('resultsGrid');
             const loader = document.getElementById('loader');
-            const status = document.getElementById('statusMessage');
+            const statusMsg = document.getElementById('statusMessage');
+            const resultCount = document.getElementById('resultCount');
+            const paginationDiv = document.getElementById('pagination');
+            const prevPageBtn = document.getElementById('prevPage');
+            const nextPageBtn = document.getElementById('nextPage');
+            const pageInfo = document.getElementById('pageInfo');
 
-            // إعادة ضبط الواجهة
-            grid.innerHTML = '';
-            status.classList.add('hidden');
-            loader.classList.remove('hidden');
+            let currentPage = 0;
+            let totalItems = 0;
+            let currentQuery = '';
 
-            // بناء رابط الاستعلام المتقدم لشبكة Google Books
-            let apiURL = `https://googleapis.com{encodeURIComponent(query)}`;
-            if (author) apiURL += `+inauthor:${encodeURIComponent(author)}`;
-            if (lang) apiURL += `&langRestrict=${lang}`;
-            apiURL += `&maxResults=20`; // جلب 20 نتيجة
+            // مزامنة اللغة بين القائمة المنسدلة العلوية والشريط الجانبي
+            langSelect.addEventListener('change', function() {
+                sidebarLang.value = this.value;
+            });
+            sidebarLang.addEventListener('change', function() {
+                langSelect.value = this.value;
+            });
 
-            try {
-                const response = await fetch(apiURL);
-                if (!response.ok) throw new Error('فشل الاتصال بالشبكة العالمية');
-                
-                const data = await response.json();
-                loader.classList.add('hidden');
+            // دالة بناء رابط API
+            function buildApiUrl(query, author, lang, startIndex = 0, maxResults = 12) {
+                let q = query.trim();
+                if (author.trim()) q += `+inauthor:${encodeURIComponent(author.trim())}`;
+                // إضافة سنة النشر إذا كانت محددة
+                const from = parseInt(yearFrom.value);
+                const to = parseInt(yearTo.value);
+                if (!isNaN(from) && from > 0) q += `+publishedYear:${from}`;
+                if (!isNaN(to) && to > 0 && to >= from) q += `-${to}`;
+                // إضافة التصنيف (subject) إذا تم اختياره
+                const cat = categoryFilter.value;
+                if (cat !== 'all') q += `+subject:${encodeURIComponent(cat)}`;
 
-                if (!data.items || data.items.length === 0) {
-                    status.textContent = 'لم نجد أي كتب تطابق هذا البحث في الشبكات العالمية.';
-                    status.classList.remove('hidden');
+                let url = `https://www.googleapis.com/books/v1/volumes?q=${encodeURIComponent(q)}`;
+                if (lang) url += `&langRestrict=${lang}`;
+                url += `&startIndex=${startIndex}&maxResults=${maxResults}`;
+                // ترتيب حسب الأحدث (إذا كان محدداً)
+                if (sortOrder.value === 'newest') url += '&orderBy=newest';
+                else url += '&orderBy=relevance';
+                return url;
+            }
+
+            // دالة البحث الرئيسية
+            async function performSearch(page = 0) {
+                const query = queryInput.value;
+                const author = authorInput.value;
+                const lang = langSelect.value;
+
+                if (!query.trim() && !author.trim()) {
+                    statusMsg.textContent = 'الرجاء إدخال عنوان الكتاب أو المؤلف للبدء.';
+                    statusMsg.classList.remove('hidden');
+                    resultsGrid.innerHTML = '';
+                    resultCount.innerHTML = '<i class="fas fa-table ml-1"></i> 0 نتيجة';
+                    paginationDiv.classList.add('hidden');
                     return;
                 }
 
-                // عرض النتائج على شكل بطاقات احترافية (Zohra-PDF Style)
-                data.items.forEach(item => {
-                    const info = item.volumeInfo;
-                    const bookId = item.id;
-                    const cover = info.imageLinks ? info.imageLinks.thumbnail : 'https://placeholder.com';
+                // إظهار التحميل
+                loader.classList.remove('hidden');
+                statusMsg.classList.add('hidden');
+                resultsGrid.innerHTML = '';
+                paginationDiv.classList.add('hidden');
+
+                const startIndex = page * 12;
+                const apiUrl = buildApiUrl(query, author, lang, startIndex, 12);
+
+                try {
+                    const response = await fetch(apiUrl);
+                    if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+
+                    const data = await response.json();
+                    loader.classList.add('hidden');
+
+                    if (!data.items || data.items.length === 0) {
+                        statusMsg.textContent = '😕 لم نجد أي كتب تطابق هذا البحث في الشبكات العالمية.';
+                        statusMsg.classList.remove('hidden');
+                        resultCount.innerHTML = '<i class="fas fa-table ml-1"></i> 0 نتيجة';
+                        return;
+                    }
+
+                    // تخزين إجمالي النتائج
+                    totalItems = data.totalItems || data.items.length;
+                    currentQuery = query;
+                    currentPage = page;
+
+                    // عرض النتائج
+                    renderBooks(data.items);
+                    resultCount.innerHTML = `<i class="fas fa-table ml-1"></i> ${totalItems} نتيجة`;
+
+                    // إظهار الترقيم إذا كان هناك أكثر من صفحة
+                    if (totalItems > 12) {
+                        paginationDiv.classList.remove('hidden');
+                        const totalPages = Math.ceil(Math.min(totalItems, 120) / 12); // حد أقصى 120 نتيجة
+                        pageInfo.textContent = `الصفحة ${page + 1} من ${totalPages}`;
+                        prevPageBtn.disabled = (page === 0);
+                        nextPageBtn.disabled = (page >= totalPages - 1);
+                    } else {
+                        paginationDiv.classList.add('hidden');
+                    }
+
+                } catch (error) {
+                    loader.classList.add('hidden');
+                    statusMsg.textContent = '⚠️ حدث خطأ أثناء الاتصال بالخادم. تأكد من اتصالك بالإنترنت وحاول مرة أخرى.';
+                    statusMsg.classList.remove('hidden');
+                    console.error('Search error:', error);
+                }
+            }
+
+            // دالة عرض البطاقات
+            function renderBooks(items) {
+                resultsGrid.innerHTML = '';
+                items.forEach(item => {
+                    const info = item.volumeInfo || {};
+                    const cover = info.imageLinks?.thumbnail || 'https://via.placeholder.com/200x280?text=لا+يوجد+غلاف';
                     const title = info.title || 'عنوان غير معروف';
                     const authors = info.authors ? info.authors.join('، ') : 'مؤلف مجهول';
                     const publisher = info.publisher || 'ناشر غير معروف';
-                    const year = info.publishedDate ? info.publishedDate.substring(0, 4) : 'تاريخ غير متوفر';
-                    
-                    // روابط القراءة والتحميل
+                    const year = info.publishedDate ? info.publishedDate.substring(0, 4) : 'سنة غير متوفرة';
                     const previewLink = info.previewLink || '#';
                     const infoLink = info.infoLink || '#';
 
                     const card = document.createElement('div');
-                    card.className = "bg-white rounded-xl shadow-md overflow-hidden hover:shadow-xl transition duration-300 flex flex-col border border-gray-100";
-                    card.innerHTML = `
-                        <div class="relative bg-gray-200 h-64 flex items-center justify-center overflow-hidden">
-                            <img src="${cover}" alt="${title}" class="object-cover h-full w-full transform hover:scale-105 transition duration-300">
-                            <span class="absolute top-2 right-2 bg-blue-600 text-white text-xs px-2 py-1 rounded font-bold">${year}</span>
-                        </div>
-                        <div class="p-4 flex-grow flex flex-col justify-between">
-                            <div>
-                                <h3 class="font-bold text-gray-900 text-base mb-1 line-clamp-2" title="${title}">${title}</h3>
-                                <p class="text-xs text-blue-600 font-semibold mb-2">${authors}</p>
-                                <p class="text-xs text-gray-400 mb-3 line-clamp-1">الناشر: ${publisher}</p>
+                    card.className = "book-card bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden flex flex-col h-full transition-all";
+
+                    // صورة الغلاف
+                    const coverDiv = document.createElement('div');
+                    coverDiv.className = "h-48 bg-gray-100 overflow-hidden flex items-center justify-center relative";
+                    const img = document.createElement('img');
+                    img.src = cover;
+                    img.alt = title;
+                    img.className = "w-full h-full object-cover";
+                    img.onerror = function() {
+                        this.style.display = 'none';
+                        const fallback = document.createElement('div');
+                        fallback.className = "cover-placeholder w-full h-full flex flex-col items-center justify-center text-gray-400";
+                        fallback.innerHTML = `<i class="fas fa-book text-4xl"></i><span class="mt-1 text-xs">لا توجد صورة</span>`;
+                        this.parentNode.appendChild(fallback);
+                    };
+                    coverDiv.appendChild(img);
+
+                    // سنة النشر كعلامة
+                    const yearBadge = document.createElement('span');
+                    yearBadge.className = "absolute top-2 left-2 bg-blue-600 text-white text-xs px-2 py-1 rounded font-bold";
+                    yearBadge.textContent = year;
+                    coverDiv.appendChild(yearBadge);
+
+                    // المحتوى
+                    const body = document.createElement('div');
+                    body.className = "p-4 flex flex-col flex-grow";
+
+                    const titleEl = document.createElement('h3');
+                    titleEl.className = "text-lg font-bold text-gray-800 line-clamp-2 leading-tight";
+                    titleEl.textContent = title;
+
+                    const authorEl = document.createElement('p');
+                    authorEl.className = "text-sm text-indigo-600 font-medium mt-1 flex items-center gap-1";
+                    authorEl.innerHTML = `<i class="fas fa-user-pen text-xs"></i> ${authors}`;
+
+                    const pubEl = document.createElement('p');
+                    pubEl.className = "text-xs text-gray-400 mt-1";
+                    pubEl.textContent = `الناشر: ${publisher}`;
+
+                    // الأزرار
+                    const actions = document.createElement('div');
+                    actions.className = "grid grid-cols-2 gap-2 mt-4 pt-3 border-t border-gray-100";
+
+                    const previewBtn = document.createElement('a');
+                    previewBtn.href = previewLink;
+                    previewBtn.target = "_blank";
+                    previewBtn.className = "text-center bg-blue-50 text-blue-700 hover:bg-blue-100 font-bold py-2 px-3 text-xs rounded-lg transition duration-200 flex items-center justify-center gap-1";
+                    previewBtn.innerHTML = `<i class="fas fa-eye"></i> قراءة`;
+
+                    const downloadBtn = document.createElement('a');
+                    downloadBtn.href = infoLink;
+                    downloadBtn.target = "_blank";
+                    downloadBtn.className = "text-center bg-green-600 text-white hover:bg-green-700 font-bold py-2 px-3 text-xs rounded-lg transition duration-200 flex items-center justify-center gap-1";
+                    downloadBtn.innerHTML = `<i class="fas fa-download"></i> تحميل`;
+
+                    actions.appendChild(previewBtn);
+                    actions.appendChild(downloadBtn);
+
+                    body.appendChild(titleEl);
+                    body.appendChild(authorEl);
+                    body.appendChild(pubEl);
+                    body.appendChild(actions);
+
+                    card.appendChild(coverDiv);
+                    card.appendChild(body);
+                    resultsGrid.appendChild(card);
+                });
+            }
+
+            // أحداث النماذج
+            searchForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                currentPage = 0;
+                performSearch(0);
+            });
+
+            applyBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                currentPage = 0;
+                performSearch(0);
+            });
+
+            resetBtn.addEventListener('click', function() {
+                queryInput.value = '';
+                authorInput.value = '';
+                langSelect.value = '';
+                sidebarLang.value = '';
+                yearFrom.value = '';
+                yearTo.value = '';
+                categoryFilter.value = 'all';
+                chkPreview.checked = true;
+                chkFulltext.checked = false;
+                sortOrder.value = 'relevance';
+                resultsGrid.innerHTML = '';
+                statusMsg.textContent = 'أدخل كلمات البحث في الأعلى لتبدأ الاستكشاف.';
+                statusMsg.classList.remove('hidden');
+                resultCount.innerHTML = '<i class="fas fa-table ml-1"></i> 0 نتيجة';
+                paginationDiv.classList.add('hidden');
+            });
+
+            // ترقيم الصفحات
+            prevPageBtn.addEventListener('click', function() {
+                if (currentPage > 0) {
+                    performSearch(currentPage - 1);
+                }
+            });
+
+            nextPageBtn.addEventListener('click', function() {
+                const totalPages = Math.ceil(Math.min(totalItems, 120) / 12);
+                if (currentPage < totalPages - 1) {
+                    performSearch(currentPage + 1);
+                }
+            });
+
+            // تغيير الترتيب يعيد البحث
+            sortOrder.addEventListener('change', function() {
+                if (queryInput.value.trim() || authorInput.value.trim()) {
+                    currentPage = 0;
+                    performSearch(0);
+                }
+            });
+
+
+            // =============================================
+            // 2. الدليل التعليمي والبحثي (بيانات ثابتة)
+            // =============================================
+
+            const directoryData = {
+                schools: [
+                    { name: "مدرسة زهرة الأهلية النموذجية", type: "تعليم أساسي وثانوي", address: "الرياض، حي الياسمين، طريق الملك عبد العزيز", phone: "+966112345678", email: "info@zohraschool.edu.sa", mapUrl: "https://google.com" },
+                    { name: "ثانوية المتفوقين الرقمية الإلكترونية", type: "ثانوي - مسار تقني وبحثي", address: "جدة، حي الخالدية، شارع الأمير سلطان", phone: "+966129876543", email: "contact@smartschool.edu", mapUrl: "https://google.com" }
+                ],
+                universities: [
+                    { name: "جامعة الملك سعود العالمية", type: "مؤسسة حكومية بحثية كبرى", address: "الرياض، الدرعية، طريق الملك خالد", phone: "+966114670000", email: "admissions@ksu.edu.sa", mapUrl: "https://google.com" },
+                    { name: "جامعة العلوم والتكنولوجيا الرقمية", type: "جامعة أهلية متخصصة بالذكاء الاصطناعي", address: "الدمام، حي الفنار، طريق الكورنيش", phone: "+966135558899", email: "research@ustd.edu.sa", mapUrl: "https://google.com" }
+                ],
+                libraries: [
+                    { name: "مكتبة الملك فهد الوطنية العامة", type: "مكتبة وطنية وحاضنة للأطروحات والكتب", address: "الرياض، حي العليا، طريق الملك فهد", phone: "+966114186111", email: "services@kfnl.gov.sa", mapUrl: "https://google.com" },
+                    { name: "مكتبة الإسكندرية الرقمية الحرة", type: "أرشيف ومكتبة بحثية عالمية هائلة", address: "الإسكندرية، الشاطبي، طريق الكورنيش", phone: "+2034839999", email: "library@bibalex.org", mapUrl: "https://google.com" }
+                ]
+            };
+
+            function renderDirectory(category) {
+                const gridDir = document.getElementById('directoryGrid');
+                const items = directoryData[category] || [];
+                gridDir.innerHTML = '';
+                if (items.length === 0) {
+                    gridDir.innerHTML = `<p class="col-span-full text-center text-gray-500 py-6 text-sm">سيتم إضافة المزيد من المؤسسات قريباً.</p>`;
+                    return;
+                }
+                items.forEach(item => {
+                    const cardHtml = `
+                        <div class="glass-card rounded-2xl p-5 border border-gray-700/50 hover:border-emerald-500/40 transition duration-300 flex flex-col justify-between group">
+                            <div class="space-y-4">
+                                <div>
+                                    <span class="text-[10px] uppercase font-bold tracking-wider text-emerald-400 bg-emerald-500/10 px-2.5 py-1 rounded-md border border-emerald-500/20">${item.type}</span>
+                                    <h3 class="font-bold text-white text-base group-hover:text-emerald-400 transition duration-200 mt-2.5">${item.name}</h3>
+                                </div>
+                                <div class="space-y-2.5 text-xs text-gray-400 border-t border-gray-800 pt-3">
+                                    <div class="flex items-start gap-2.5">
+                                        <i class="fa-solid fa-location-dot text-rose-400 mt-0.5 shrink-0 text-sm"></i>
+                                        <span class="leading-relaxed">${item.address}</span>
+                                    </div>
+                                    <div class="flex items-center gap-2.5">
+                                        <i class="fa-solid fa-phone text-sky-400 shrink-0 text-sm"></i>
+                                        <a href="tel:${item.phone}" class="hover:text-white transition font-mono">${item.phone}</a>
+                                    </div>
+                                    <div class="flex items-center gap-2.5">
+                                        <i class="fa-solid fa-envelope text-amber-400 shrink-0 text-sm"></i>
+                                        <a href="mailto:${item.email}" class="hover:text-white transition break-all font-mono">${item.email}</a>
+                                    </div>
+                                </div>
                             </div>
-                            <div class="grid grid-cols-2 gap-2 mt-2">
-                                <a href="${previewLink}" target="_blank" class="text-center bg-blue-50 text-blue-700 hover:bg-blue-100 font-bold py-2 px-3 text-xs rounded-lg transition duration-200">📖 قراءة ومعاينة</a>
-                                <a href="${infoLink}" target="_blank" class="text-center bg-green-600 text-white hover:bg-green-700 font-bold py-2 px-3 text-xs rounded-lg transition duration-200">📥 تحميل / مصدر</a>
+                            <div class="grid grid-cols-2 gap-2 mt-5 pt-3 border-t border-gray-800">
+                                <a href="tel:${item.phone}" class="flex items-center justify-center gap-1.5 bg-gray-800 hover:bg-gray-700 text-gray-200 py-2.5 rounded-xl text-xs font-bold border border-gray-700 transition active:scale-95">
+                                    <i class="fa-solid fa-phone-flip text-emerald-400"></i> اتصـال سريع
+                                </a>
+                                <a href="${item.mapUrl}" target="_blank" class="flex items-center justify-center gap-1.5 bg-gradient-to-r from-gray-700 to-gray-800 hover:from-emerald-600 hover:to-teal-600 text-white py-2.5 rounded-xl text-xs font-bold border border-gray-600/50 hover:border-transparent shadow-md transition active:scale-95">
+                                    <i class="fa-solid fa-map-location-dot text-sky-400 group-hover:text-white"></i> خرائط Google
+                                </a>
                             </div>
                         </div>
                     `;
-                    grid.appendChild(card);
+                    gridDir.innerHTML += cardHtml;
                 });
-
-            } catch (error) {
-                loader.classList.add('hidden');
-                status.textContent = 'حدث خطأ أثناء الاتصال بالخادم. تحقق من إنترنت الخاص بك.';
-                status.classList.remove('hidden');
-                console.error(error);
             }
-        }
+
+            window.switchDirectory = function(category) {
+                const buttons = document.querySelectorAll('.dir-tab-btn');
+                buttons.forEach(btn => {
+                    btn.className = "dir-tab-btn py-3 px-4 rounded-xl text-xs sm:text-sm font-bold text-gray-400 hover:bg-gray-800 hover:text-white transition duration-200 flex items-center justify-center gap-2";
+                });
+                const activeBtn = document.getElementById(`btn-${category}`);
+                if (activeBtn) {
+                    activeBtn.className = "dir-tab-btn py-3 px-4 rounded-xl text-xs sm:text-sm font-bold bg-gradient-to-r from-emerald-600 to-teal-600 text-white shadow-lg shadow-emerald-600/10 transition duration-200 flex items-center justify-center gap-2";
+                }
+                renderDirectory(category);
+            };
+
+            // عرض المدارس افتراضياً
+            renderDirectory('schools');
+
+        })();
     </script>
+
 </body>
 </html>
