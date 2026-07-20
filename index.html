@@ -1,43 +1,36 @@
-
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>زهرة Zohra - المكتبة الرقمية الذكية</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>زهرة Zohra - المكتبة الرقمية</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
-        * {
-            font-family: 'Cairo', 'Segoe UI', sans-serif;
-        }
-        body {
-            background: #f0f4f8;
-        }
-        /* تنسيق البطاقات */
+        * { font-family: 'Cairo', sans-serif; }
+        body { background: #f1f5f9; }
         .book-card {
-            transition: all 0.3s ease;
             background: white;
             border-radius: 1.25rem;
             overflow: hidden;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
-            border: 1px solid #e9edf2;
+            transition: 0.3s;
+            border: 1px solid #e2e8f0;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.03);
         }
         .book-card:hover {
             transform: translateY(-6px);
-            box-shadow: 0 16px 40px rgba(0, 0, 0, 0.10);
-            border-color: #c7d2fe;
+            box-shadow: 0 16px 40px rgba(0,0,0,0.08);
+            border-color: #a5b4fc;
         }
         .book-cover {
-            height: 200px;
-            background: #e5e9f0;
+            height: 180px;
+            background: #e2e8f0;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 3rem;
             color: #94a3b8;
-            position: relative;
+            font-size: 3rem;
             overflow: hidden;
         }
         .book-cover img {
@@ -49,15 +42,7 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: center;
-            color: #94a3b8;
-        }
-        .book-cover .fallback i {
-            font-size: 3rem;
-            margin-bottom: 0.25rem;
-        }
-        .book-cover .fallback span {
-            font-size: 0.7rem;
+            font-size: 0.8rem;
         }
         .price-tag {
             background: #dbeafe;
@@ -65,31 +50,12 @@
             font-weight: 700;
             padding: 0.2rem 0.8rem;
             border-radius: 999px;
-            font-size: 0.75rem;
+            font-size: 0.7rem;
         }
-        .btn-preview {
-            background: #eef2ff;
-            color: #4338ca;
-            transition: 0.2s;
-        }
-        .btn-preview:hover {
-            background: #c7d2fe;
-        }
-        .btn-download {
-            background: #1e293b;
-            color: white;
-            transition: 0.2s;
-        }
-        .btn-download:hover {
-            background: #0f172a;
-        }
-        /* شريط التصفية بالأحرف */
-        .alpha-filter {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 0.35rem;
-            justify-content: center;
-        }
+        .btn-preview { background: #eef2ff; color: #4338ca; transition: 0.2s; }
+        .btn-preview:hover { background: #c7d2fe; }
+        .btn-download { background: #1e293b; color: white; transition: 0.2s; }
+        .btn-download:hover { background: #0f172a; }
         .alpha-filter button {
             width: 2.5rem;
             height: 2.5rem;
@@ -98,531 +64,338 @@
             background: white;
             color: #374151;
             font-weight: 700;
-            font-size: 0.85rem;
             transition: 0.15s;
             cursor: pointer;
         }
-        .alpha-filter button:hover {
-            background: #e0e7ff;
-            border-color: #6366f1;
-        }
-        .alpha-filter button.active {
-            background: #4f46e5;
-            color: white;
-            border-color: #4f46e5;
-            box-shadow: 0 4px 12px rgba(79, 70, 229, 0.35);
-        }
-        /* رأس الصفحة */
-        .header-gradient {
-            background: linear-gradient(135deg, #1e1b4b, #312e81, #4f46e5);
-        }
-        /* مربع البحث */
-        .search-box {
-            background: rgba(255, 255, 255, 0.12);
-            backdrop-filter: blur(8px);
-            border: 1px solid rgba(255, 255, 255, 0.15);
-            border-radius: 1rem;
-        }
-        .search-box input {
-            background: transparent;
-            border: none;
-            color: white;
-            padding: 0.75rem 1rem;
-            width: 100%;
-            outline: none;
-        }
-        .search-box input::placeholder {
-            color: rgba(255, 255, 255, 0.6);
-        }
-        .search-box button {
-            background: #fbbf24;
-            color: #1e1b4b;
-            font-weight: 700;
-            padding: 0.6rem 1.8rem;
-            border-radius: 999px;
-            transition: 0.2s;
-            border: none;
-            cursor: pointer;
-        }
-        .search-box button:hover {
-            background: #f59e0b;
-        }
-        /* تذييل */
-        .footer-gradient {
-            background: #0f172a;
-        }
-        /* تصفية فارغة */
-        .empty-state {
-            text-align: center;
-            padding: 3rem 1rem;
-            color: #6b7280;
-        }
-        .empty-state i {
-            font-size: 3rem;
-            color: #d1d5db;
-            margin-bottom: 1rem;
-        }
-        /* responsive */
-        @media (max-width: 640px) {
-            .alpha-filter button {
-                width: 2.2rem;
-                height: 2.2rem;
-                font-size: 0.75rem;
-            }
-        }
+        .alpha-filter button:hover { background: #e0e7ff; border-color: #6366f1; }
+        .alpha-filter button.active { background: #4f46e5; color: white; border-color: #4f46e5; box-shadow: 0 4px 12px rgba(79,70,229,0.3); }
+        .header-gradient { background: linear-gradient(135deg, #1e1b4b, #312e81, #4f46e5); }
+        .search-box { background: rgba(255,255,255,0.12); backdrop-filter: blur(8px); border-radius: 1rem; border: 1px solid rgba(255,255,255,0.1); }
+        .search-box input { background: transparent; border: none; color: white; padding: 0.7rem 1rem; width: 100%; outline: none; }
+        .search-box input::placeholder { color: rgba(255,255,255,0.6); }
+        .search-box button { background: #fbbf24; color: #1e1b4b; font-weight: 700; padding: 0.5rem 1.5rem; border-radius: 999px; border: none; cursor: pointer; transition: 0.2s; }
+        .search-box button:hover { background: #f59e0b; }
+        .empty-state { text-align: center; padding: 3rem 1rem; color: #6b7280; }
+        .empty-state i { font-size: 3rem; color: #d1d5db; margin-bottom: 1rem; }
     </style>
 </head>
 <body>
 
-    <!-- ====== الرأس ====== -->
-    <header class="header-gradient text-white py-6 px-4 shadow-lg">
-        <div class="max-w-7xl mx-auto">
-            <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-                <div class="flex items-center gap-3">
-                    <i class="fas fa-book-open text-3xl text-yellow-300"></i>
-                    <div>
-                        <h1 class="text-2xl font-extrabold tracking-tight">زهرة <span class="text-yellow-300">Zohra</span></h1>
-                        <p class="text-xs text-indigo-200">المكتبة الرقمية الذكية</p>
-                    </div>
-                </div>
-                <!-- شريط البحث -->
-                <div class="search-box flex items-center w-full md:w-auto md:min-w-[320px]">
-                    <i class="fas fa-search text-indigo-300 mr-3 mr-3"></i>
-                    <input type="text" id="searchInput" placeholder="ابحث عن كتاب، مؤلف، أو كلمة مفتاحية..." />
-                    <button id="searchBtn"><i class="fas fa-arrow-left ml-1"></i> بحث</button>
-                </div>
+<!-- الرأس -->
+<header class="header-gradient text-white py-5 px-4 shadow-lg">
+    <div class="max-w-7xl mx-auto flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        <div class="flex items-center gap-3">
+            <i class="fas fa-book-open text-3xl text-yellow-300"></i>
+            <div>
+                <h1 class="text-2xl font-extrabold">زهرة <span class="text-yellow-300">Zohra</span></h1>
+                <p class="text-xs text-indigo-200">المكتبة الرقمية الذكية</p>
             </div>
         </div>
-    </header>
-
-    <!-- ====== المحتوى ====== -->
-    <main class="max-w-7xl mx-auto px-4 py-6">
-
-        <!-- ====== تصفية الحروف الأبجدية ====== -->
-        <div class="bg-white rounded-2xl shadow-sm p-4 mb-6 border border-gray-100">
-            <div class="flex flex-col sm:flex-row sm:items-center gap-3">
-                <span class="text-sm font-bold text-gray-700 flex items-center gap-2">
-                    <i class="fas fa-sort-alpha-down text-indigo-500"></i> تصفح حسب الحرف الأول:
-                </span>
-                <div class="alpha-filter" id="alphaFilter">
-                    <!-- سيتم إنشاء الأزرار بواسطة JavaScript -->
-                </div>
-                <button id="clearAlphaBtn" class="text-sm text-gray-400 hover:text-gray-700 transition mr-auto sm:mr-0">
-                    <i class="fas fa-times-circle"></i> إلغاء
-                </button>
-            </div>
+        <div class="search-box flex items-center w-full md:w-auto md:min-w-[300px]">
+            <i class="fas fa-search text-indigo-300 mx-2"></i>
+            <input type="text" id="searchInput" placeholder="ابحث عن كتاب، مؤلف، أو كلمة">
+            <button id="searchBtn"><i class="fas fa-arrow-left ml-1"></i> بحث</button>
         </div>
+    </div>
+</header>
 
-        <!-- ====== عدد النتائج ====== -->
-        <div class="flex items-center justify-between mb-4">
-            <span id="resultCount" class="text-sm text-gray-500">
-                <i class="fas fa-table ml-1"></i> <span id="countNumber">0</span> كتاب
+<!-- المحتوى الرئيسي -->
+<main class="max-w-7xl mx-auto px-4 py-6">
+
+    <!-- شريط الحروف والتصفية -->
+    <div class="bg-white rounded-2xl shadow-sm p-4 mb-6 border border-gray-100">
+        <div class="flex flex-col sm:flex-row sm:items-center gap-3">
+            <span class="text-sm font-bold text-gray-700 flex items-center gap-2">
+                <i class="fas fa-sort-alpha-down text-indigo-500"></i> تصفح حسب الحرف:
             </span>
-            <div class="flex items-center gap-2">
-                <span class="text-sm text-gray-500">ترتيب:</span>
-                <select id="sortOrder" class="text-sm border border-gray-200 rounded-lg px-3 py-1.5 bg-white focus:ring-2 focus:ring-indigo-200 outline-none">
-                    <option value="default">الافتراضي</option>
-                    <option value="title">حسب العنوان</option>
-                    <option value="author">حسب المؤلف</option>
-                </select>
-            </div>
+            <div class="alpha-filter" id="alphaFilter"></div>
+            <button id="clearAlphaBtn" class="text-sm text-gray-400 hover:text-gray-700 transition">
+                <i class="fas fa-times-circle"></i> إلغاء
+            </button>
         </div>
+    </div>
 
-        <!-- ====== شبكة الكتب ====== -->
-        <div id="booksGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
-            <!-- سيتم عرض البطاقات هنا -->
+    <!-- شريط النتائج والترتيب -->
+    <div class="flex flex-wrap items-center justify-between mb-4">
+        <span id="resultCount" class="text-sm text-gray-500">
+            <i class="fas fa-table ml-1"></i> <span id="countNumber">0</span> كتاب
+        </span>
+        <div class="flex items-center gap-2">
+            <span class="text-sm text-gray-500">ترتيب:</span>
+            <select id="sortOrder" class="text-sm border border-gray-200 rounded-lg px-3 py-1.5 bg-white focus:ring-2 focus:ring-indigo-200 outline-none">
+                <option value="default">الافتراضي</option>
+                <option value="title">حسب العنوان</option>
+                <option value="author">حسب المؤلف</option>
+            </select>
         </div>
+    </div>
 
-        <!-- ====== حالة فارغة ====== -->
-        <div id="emptyState" class="empty-state hidden">
-            <i class="fas fa-book-open"></i>
-            <p class="text-lg font-medium">لا توجد كتب تطابق بحثك</p>
-            <p class="text-sm text-gray-400">جرب تغيير كلمات البحث أو تصفية الحروف</p>
-        </div>
+    <!-- شبكة الكتب -->
+    <div id="booksGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5"></div>
 
-    </main>
+    <!-- حالة فارغة -->
+    <div id="emptyState" class="empty-state hidden">
+        <i class="fas fa-book-open"></i>
+        <p class="text-lg font-medium">لا توجد كتب تطابق بحثك</p>
+        <p class="text-sm text-gray-400">جرب تغيير كلمات البحث أو اختيار حرف آخر</p>
+    </div>
 
-    <!-- ====== تذييل ====== -->
-    <footer class="footer-gradient text-gray-400 text-center py-6 mt-8 border-t border-gray-800">
-        <div class="max-w-7xl mx-auto px-4">
-            <p class="text-sm">© 2026 <span class="text-white font-semibold">زهرة Zohra</span> — المكتبة الرقمية الذكية</p>
-            <p class="text-xs mt-1 text-gray-600">محرك بحث داخلي · يعمل بدون إنترنت · بيانات محلية</p>
-        </div>
-    </footer>
+</main>
 
-    <!-- ============================================ -->
-    <!-- ====== JavaScript ====== -->
-    <!-- ============================================ -->
-    <script>
-        (function() {
+<!-- تذييل -->
+<footer class="bg-gray-900 text-gray-400 text-center py-6 mt-8">
+    <p class="text-sm">© 2026 <span class="text-white font-semibold">زهرة Zohra</span> — محرك بحث داخلي · يعمل بدون إنترنت</p>
+</footer>
 
-            // =============================================
-            // 1. قاعدة بيانات الكتب (محلية، بدون إنترنت)
-            // =============================================
-            const booksDB = [{
-                id: 1,
-                title: "أرض زيكولا",
-                author: "عمرو عبد الحميد",
-                year: 2020,
-                category: "رواية",
-                price: "1.00 €",
-                snippet: "رواية خيالية علمية تأخذك إلى عالم موازٍ مليء بالألغاز والمغامرات.",
-                cover: "https://picsum.photos/seed/zikola/400/300",
-                featured: true
-            }, {
-                id: 2,
-                title: "مقدمة ابن خلدون",
-                author: "ابن خلدون",
-                year: 1377,
-                category: "فلسفة وتاريخ",
-                price: "1.00 €",
-                snippet: "الكتاب المؤسس لعلم الاجتماع والتاريخ، يقدم رؤية فريدة عن الحضارة والعمران.",
-                cover: "https://picsum.photos/seed/ibnkh/400/300",
-                featured: true
-            }, {
-                id: 3,
-                title: "لأنك الله",
-                author: "علي بن جابر الفيفي",
-                year: 2018,
-                category: "فكر وروحانيات",
-                price: "1.00 €",
-                snippet: "كتاب روحاني يستعرض أسماء الله الحسنى وتأملات في معانيها وتأثيرها في الحياة.",
-                cover: "https://picsum.photos/seed/llah/400/300",
-                featured: true
-            }, {
-                id: 4,
-                title: "البيان والتبيين",
-                author: "الجاحظ",
-                year: 850,
-                category: "أدب وبلاغة",
-                price: "1.00 €",
-                snippet: "موسوعة أدبية وبلاغية، من أهم كتب التراث العربي في فن البيان والخطابة.",
-                cover: "https://picsum.photos/seed/bayan/400/300",
-                featured: true
-            }, {
-                id: 5,
-                title: "الأيام",
-                author: "طه حسين",
-                year: 1929,
-                category: "سيرة ذاتية",
-                price: "1.00 €",
-                snippet: "سيرة عميد الأدب العربي، تحكي قصة كفاحه منذ الطفولة حتى أصبح رمزاً للتنوير.",
-                cover: "https://picsum.photos/seed/ayam/400/300",
-                featured: true
-            }, {
-                id: 6,
-                title: "موسوعة الفلسفة الحديثة",
-                author: "جماعة من الباحثين",
-                year: 2015,
-                category: "فلسفة",
-                price: "1.00 €",
-                snippet: "مرجع شامل يغطي أهم التيارات الفلسفية من عصر النهضة حتى اليوم.",
-                cover: "https://picsum.photos/seed/falsafa/400/300",
-                featured: true
-            }, {
-                id: 7,
-                title: "الذكاء الاصطناعي",
-                author: "د. أحمد المنصور",
-                year: 2023,
-                category: "علوم حاسوب",
-                price: "1.00 €",
-                snippet: "مدخل شامل إلى عالم الذكاء الاصطناعي وتطبيقاته العملية في مجالات متعددة.",
-                cover: "https://picsum.photos/seed/ai/400/300",
-                featured: false
-            }, {
-                id: 8,
-                title: "هندسة البرمجيات",
-                author: "د. سارة الخالدي",
-                year: 2022,
-                category: "هندسة",
-                price: "1.00 €",
-                snippet: "دليل متكامل لمنهجيات تطوير البرمجيات الحديثة بأسلوب عملي ومبسط.",
-                cover: "https://picsum.photos/seed/soft/400/300",
-                featured: false
-            }, {
-                id: 9,
-                title: "تاريخ الفلسفة الغربية",
-                author: "د. رامي الحكيم",
-                year: 2021,
-                category: "فلسفة",
-                price: "1.00 €",
-                snippet: "رحلة عبر تطور الفكر الفلسفي من الإغريق إلى العصر الحديث بأسلوب تحليلي.",
-                cover: "https://picsum.photos/seed/phil/400/300",
-                featured: false
-            }, {
-                id: 10,
-                title: "الفيزياء الكمية",
-                author: "د. نادر فوزي",
-                year: 2024,
-                category: "فيزياء",
-                price: "1.00 €",
-                snippet: "شرح مبسط لمفاهيم ميكانيكا الكم مع رسوم توضيحية وتجارب ذهنية شيقة.",
-                cover: "https://picsum.photos/seed/quantum/400/300",
-                featured: false
-            }, {
-                id: 11,
-                title: "تحليل البيانات بـ Python",
-                author: "م. ليلى حسن",
-                year: 2023,
-                category: "علوم حاسوب",
-                price: "1.00 €",
-                snippet: "دليل عملي لتحليل البيانات باستخدام مكتبات Python الشهيرة مع مشاريع تطبيقية.",
-                cover: "https://picsum.photos/seed/pyData/400/300",
-                featured: false
-            }, {
-                id: 12,
-                title: "الأدب العباسي",
-                author: "أ. أمل السعدي",
-                year: 2020,
-                category: "أدب",
-                price: "1.00 €",
-                snippet: "دراسة متعمقة للشعر والنثر في العصر العباسي مع نماذج من المعلقات والمقامات.",
-                cover: "https://picsum.photos/seed/abbasi/400/300",
-                featured: false
-            }];
+<script>
+    (function() {
+        // ==============================
+        // 1. قاعدة بيانات الكتب
+        // ==============================
+        const books = [
+            { id: 1, title: "أرض زيكولا", author: "عمرو عبد الحميد", year: 2020, category: "رواية", price: "1.00 €", snippet: "رواية خيالية علمية تأخذك إلى عالم موازٍ مليء بالألغاز.", cover: "https://picsum.photos/seed/zikola/400/300" },
+            { id: 2, title: "مقدمة ابن خلدون", author: "ابن خلدون", year: 1377, category: "فلسفة وتاريخ", price: "1.00 €", snippet: "الكتاب المؤسس لعلم الاجتماع والتاريخ.", cover: "https://picsum.photos/seed/ibnkh/400/300" },
+            { id: 3, title: "لأنك الله", author: "علي بن جابر الفيفي", year: 2018, category: "فكر وروحانيات", price: "1.00 €", snippet: "كتاب روحاني يستعرض أسماء الله الحسنى وتأملاتها.", cover: "https://picsum.photos/seed/llah/400/300" },
+            { id: 4, title: "البيان والتبيين", author: "الجاحظ", year: 850, category: "أدب وبلاغة", price: "1.00 €", snippet: "موسوعة أدبية وبلاغية من أهم كتب التراث.", cover: "https://picsum.photos/seed/bayan/400/300" },
+            { id: 5, title: "الأيام", author: "طه حسين", year: 1929, category: "سيرة ذاتية", price: "1.00 €", snippet: "سيرة عميد الأدب العربي منذ الطفولة حتى النضج.", cover: "https://picsum.photos/seed/ayam/400/300" },
+            { id: 6, title: "موسوعة الفلسفة الحديثة", author: "جماعة من الباحثين", year: 2015, category: "فلسفة", price: "1.00 €", snippet: "مرجع شامل يغطي أهم التيارات الفلسفية.", cover: "https://picsum.photos/seed/falsafa/400/300" },
+            { id: 7, title: "الذكاء الاصطناعي", author: "د. أحمد المنصور", year: 2023, category: "علوم حاسوب", price: "1.00 €", snippet: "مدخل شامل إلى الذكاء الاصطناعي وتطبيقاته.", cover: "https://picsum.photos/seed/ai/400/300" },
+            { id: 8, title: "هندسة البرمجيات", author: "د. سارة الخالدي", year: 2022, category: "هندسة", price: "1.00 €", snippet: "دليل متكامل لمنهجيات تطوير البرمجيات.", cover: "https://picsum.photos/seed/soft/400/300" },
+            { id: 9, title: "تاريخ الفلسفة الغربية", author: "د. رامي الحكيم", year: 2021, category: "فلسفة", price: "1.00 €", snippet: "رحلة عبر تطور الفكر الفلسفي من الإغريق.", cover: "https://picsum.photos/seed/phil/400/300" },
+            { id: 10, title: "الفيزياء الكمية", author: "د. نادر فوزي", year: 2024, category: "فيزياء", price: "1.00 €", snippet: "شرح مبسط لميكانيكا الكم مع رسوم توضيحية.", cover: "https://picsum.photos/seed/quantum/400/300" },
+            { id: 11, title: "تحليل البيانات بـ Python", author: "م. ليلى حسن", year: 2023, category: "علوم حاسوب", price: "1.00 €", snippet: "دليل عملي لتحليل البيانات باستخدام مكتبات Python.", cover: "https://picsum.photos/seed/pyData/400/300" },
+            { id: 12, title: "الأدب العباسي", author: "أ. أمل السعدي", year: 2020, category: "أدب", price: "1.00 €", snippet: "دراسة متعمقة للشعر والنثر في العصر العباسي.", cover: "https://picsum.photos/seed/abbasi/400/300" }
+        ];
 
-            // =============================================
-            // 2. عناصر الواجهة
-            // =============================================
-            const grid = document.getElementById('booksGrid');
-            const emptyState = document.getElementById('emptyState');
-            const countSpan = document.getElementById('countNumber');
-            const searchInput = document.getElementById('searchInput');
-            const searchBtn = document.getElementById('searchBtn');
-            const alphaContainer = document.getElementById('alphaFilter');
-            const clearAlphaBtn = document.getElementById('clearAlphaBtn');
-            const sortOrder = document.getElementById('sortOrder');
+        // ==============================
+        // 2. عناصر DOM
+        // ==============================
+        const grid = document.getElementById('booksGrid');
+        const emptyState = document.getElementById('emptyState');
+        const countSpan = document.getElementById('countNumber');
+        const searchInput = document.getElementById('searchInput');
+        const searchBtn = document.getElementById('searchBtn');
+        const alphaContainer = document.getElementById('alphaFilter');
+        const clearAlphaBtn = document.getElementById('clearAlphaBtn');
+        const sortOrder = document.getElementById('sortOrder');
 
-            // حالة التصفية
-            let currentFilter = {
-                query: '',
-                alpha: null, // الحرف المختار (مثل 'أ', 'ب', ...)
-            };
+        // ==============================
+        // 3. الحالة (State)
+        // ==============================
+        const state = {
+            query: '',
+            alpha: null,  // الحرف المحدد (مثل 'أ', 'ب', ...)
+        };
 
-            // =============================================
-            // 3. إنشاء أزرار الحروف الأبجدية
-            // =============================================
-            // الحروف العربية المستخدمة في العناوين
-            const arabicLetters = ['أ', 'ب', 'ت', 'ث', 'ج', 'ح', 'خ', 'د', 'ذ', 'ر', 'ز', 'س', 'ش', 'ص', 'ض', 'ط', 'ظ', 'ع', 'غ', 'ف', 'ق', 'ك', 'ل', 'م', 'ن', 'ه', 'و', 'ي'];
+        // ==============================
+        // 4. دوال التصفية والترتيب والعرض
+        // ==============================
 
-            // استخراج الحروف الأولى الفعلية من الكتب
-            const usedLetters = new Set();
-            booksDB.forEach(book => {
-                const firstChar = book.title.trim()[0];
-                if (firstChar && arabicLetters.includes(firstChar)) {
-                    usedLetters.add(firstChar);
+        // تصفية الكتب
+        function getFilteredBooks() {
+            const q = state.query.trim().toLowerCase();
+            const alpha = state.alpha;
+
+            return books.filter(book => {
+                let matchQuery = true;
+                if (q) {
+                    const inTitle = book.title.toLowerCase().includes(q);
+                    const inAuthor = book.author.toLowerCase().includes(q);
+                    const inSnippet = book.snippet.toLowerCase().includes(q);
+                    matchQuery = inTitle || inAuthor || inSnippet;
                 }
+                let matchAlpha = true;
+                if (alpha) {
+                    const first = book.title.trim()[0] || '';
+                    matchAlpha = (first === alpha);
+                }
+                return matchQuery && matchAlpha;
             });
+        }
 
-            // إنشاء الأزرار فقط للحروف الموجودة
-            const sortedLetters = arabicLetters.filter(ch => usedLetters.has(ch));
-            sortedLetters.forEach(ch => {
+        // ترتيب النتائج
+        function sortBooks(filtered) {
+            const order = sortOrder.value;
+            const sorted = [...filtered];
+            if (order === 'title') {
+                sorted.sort((a, b) => a.title.localeCompare(b.title, 'ar'));
+            } else if (order === 'author') {
+                sorted.sort((a, b) => a.author.localeCompare(b.author, 'ar'));
+            }
+            return sorted;
+        }
+
+        // عرض البطاقات
+        function renderBooks(booksList) {
+            grid.innerHTML = '';
+            if (booksList.length === 0) {
+                emptyState.classList.remove('hidden');
+                countSpan.textContent = '0';
+                return;
+            }
+            emptyState.classList.add('hidden');
+            countSpan.textContent = booksList.length;
+
+            booksList.forEach(book => {
+                const card = document.createElement('div');
+                card.className = 'book-card flex flex-col';
+
+                // الغلاف
+                const coverDiv = document.createElement('div');
+                coverDiv.className = 'book-cover';
+                const img = document.createElement('img');
+                img.src = book.cover;
+                img.alt = book.title;
+                img.onerror = function() {
+                    this.style.display = 'none';
+                    const fallback = document.createElement('div');
+                    fallback.className = 'fallback';
+                    fallback.innerHTML = `<i class="fas fa-book"></i><span>${book.title}</span>`;
+                    coverDiv.appendChild(fallback);
+                };
+                coverDiv.appendChild(img);
+
+                // المحتوى
+                const body = document.createElement('div');
+                body.className = 'p-4 flex flex-col flex-grow';
+
+                const titleEl = document.createElement('h3');
+                titleEl.className = 'text-base font-bold text-gray-800 line-clamp-2';
+                titleEl.textContent = book.title;
+
+                const authorEl = document.createElement('p');
+                authorEl.className = 'text-sm text-indigo-600 font-medium mt-1';
+                authorEl.textContent = book.author;
+
+                const snippetEl = document.createElement('p');
+                snippetEl.className = 'text-xs text-gray-500 mt-2 line-clamp-2 flex-grow';
+                snippetEl.textContent = book.snippet;
+
+                const meta = document.createElement('div');
+                meta.className = 'flex items-center justify-between mt-3 pt-2 border-t border-gray-100';
+                const price = document.createElement('span');
+                price.className = 'price-tag';
+                price.textContent = book.price;
+                const category = document.createElement('span');
+                category.className = 'text-xs text-gray-400';
+                category.textContent = book.category;
+                meta.appendChild(price);
+                meta.appendChild(category);
+
+                const actions = document.createElement('div');
+                actions.className = 'flex gap-2 mt-3';
+                const previewBtn = document.createElement('button');
+                previewBtn.className = 'flex-1 btn-preview text-sm font-medium py-2 rounded-lg transition flex items-center justify-center gap-1';
+                previewBtn.innerHTML = `<i class="fas fa-eye"></i> معاينة`;
+                previewBtn.onclick = () => alert(`📖 معاينة: ${book.title}\nالمؤلف: ${book.author}\n${book.snippet}`);
+
+                const downloadBtn = document.createElement('button');
+                downloadBtn.className = 'flex-1 btn-download text-sm font-medium py-2 rounded-lg transition flex items-center justify-center gap-1';
+                downloadBtn.innerHTML = `<i class="fas fa-file-pdf"></i> تحميل`;
+                downloadBtn.onclick = () => alert(`📥 تحميل: ${book.title}\nسيتم توجيهك إلى رابط التحميل.`);
+
+                actions.appendChild(previewBtn);
+                actions.appendChild(downloadBtn);
+
+                body.appendChild(titleEl);
+                body.appendChild(authorEl);
+                body.appendChild(snippetEl);
+                body.appendChild(meta);
+                body.appendChild(actions);
+
+                card.appendChild(coverDiv);
+                card.appendChild(body);
+                grid.appendChild(card);
+            });
+        }
+
+        // الدالة الرئيسية لتحديث الواجهة
+        function applyFilters() {
+            const filtered = getFilteredBooks();
+            const sorted = sortBooks(filtered);
+            renderBooks(sorted);
+        }
+
+        // ==============================
+        // 5. إنشاء أزرار الحروف
+        // ==============================
+        function buildAlphaButtons() {
+            const arabicLetters = ['أ','ب','ت','ث','ج','ح','خ','د','ذ','ر','ز','س','ش','ص','ض','ط','ظ','ع','غ','ف','ق','ك','ل','م','ن','ه','و','ي'];
+            // استخراج الحروف المستخدمة فعلاً في عناوين الكتب
+            const used = new Set();
+            books.forEach(book => {
+                const first = book.title.trim()[0] || '';
+                if (arabicLetters.includes(first)) used.add(first);
+            });
+            const sorted = arabicLetters.filter(ch => used.has(ch));
+
+            alphaContainer.innerHTML = '';
+            sorted.forEach(ch => {
                 const btn = document.createElement('button');
                 btn.textContent = ch;
                 btn.dataset.letter = ch;
                 btn.addEventListener('click', function() {
                     // تبديل التحديد
-                    if (currentFilter.alpha === ch) {
-                        currentFilter.alpha = null;
+                    if (state.alpha === ch) {
+                        state.alpha = null;
                         this.classList.remove('active');
                     } else {
                         // إزالة التحديد عن الكل
                         document.querySelectorAll('.alpha-filter button').forEach(b => b.classList.remove('active'));
-                        currentFilter.alpha = ch;
+                        state.alpha = ch;
                         this.classList.add('active');
                     }
                     applyFilters();
                 });
                 alphaContainer.appendChild(btn);
             });
+        }
 
-            // زر إلغاء التصفية بالحرف
-            clearAlphaBtn.addEventListener('click', function() {
-                currentFilter.alpha = null;
-                document.querySelectorAll('.alpha-filter button').forEach(b => b.classList.remove('active'));
-                applyFilters();
-            });
+        // ==============================
+        // 6. ربط الأحداث
+        // ==============================
 
-            // =============================================
-            // 4. دوال التصفية والعرض
-            // =============================================
-
-            // تصفية الكتب حسب البحث والحرف
-            function filterBooks() {
-                const query = currentFilter.query.trim().toLowerCase();
-                const alpha = currentFilter.alpha;
-
-                let filtered = booksDB.filter(book => {
-                    // تصفية حسب النص (العنوان، المؤلف، المقتطف)
-                    let matchQuery = true;
-                    if (query) {
-                        const inTitle = book.title.toLowerCase().includes(query);
-                        const inAuthor = book.author.toLowerCase().includes(query);
-                        const inSnippet = book.snippet.toLowerCase().includes(query);
-                        matchQuery = inTitle || inAuthor || inSnippet;
-                    }
-
-                    // تصفية حسب الحرف الأول
-                    let matchAlpha = true;
-                    if (alpha) {
-                        const firstChar = book.title.trim()[0];
-                        matchAlpha = (firstChar === alpha);
-                    }
-
-                    return matchQuery && matchAlpha;
-                });
-
-                return filtered;
-            }
-
-            // ترتيب النتائج
-            function sortBooks(books) {
-                const order = sortOrder.value;
-                const sorted = [...books];
-                if (order === 'title') {
-                    sorted.sort((a, b) => a.title.localeCompare(b.title, 'ar'));
-                } else if (order === 'author') {
-                    sorted.sort((a, b) => a.author.localeCompare(b.author, 'ar'));
-                }
-                // 'default' يحافظ على الترتيب الأصلي
-                return sorted;
-            }
-
-            // عرض الكتب في الشبكة
-            function renderBooks(books) {
-                grid.innerHTML = '';
-                if (books.length === 0) {
-                    emptyState.classList.remove('hidden');
-                    countSpan.textContent = '0';
-                    return;
-                }
-                emptyState.classList.add('hidden');
-                countSpan.textContent = books.length;
-
-                books.forEach(book => {
-                    const card = document.createElement('div');
-                    card.className = 'book-card flex flex-col';
-
-                    // الغلاف
-                    const coverDiv = document.createElement('div');
-                    coverDiv.className = 'book-cover';
-                    // محاولة تحميل الصورة
-                    const img = document.createElement('img');
-                    img.src = book.cover;
-                    img.alt = book.title;
-                    img.onerror = function() {
-                        this.style.display = 'none';
-                        const fallback = document.createElement('div');
-                        fallback.className = 'fallback';
-                        fallback.innerHTML = `<i class="fas fa-book"></i><span>${book.title}</span>`;
-                        this.parentNode.appendChild(fallback);
-                    };
-                    coverDiv.appendChild(img);
-
-                    // المحتوى النصي
-                    const body = document.createElement('div');
-                    body.className = 'p-4 flex flex-col flex-grow';
-
-                    const title = document.createElement('h3');
-                    title.className = 'text-base font-bold text-gray-800 line-clamp-2 leading-tight';
-                    title.textContent = book.title;
-
-                    const author = document.createElement('p');
-                    author.className = 'text-sm text-indigo-600 font-medium mt-1';
-                    author.textContent = book.author;
-
-                    const snippet = document.createElement('p');
-                    snippet.className = 'text-xs text-gray-500 mt-2 line-clamp-2 flex-grow';
-                    snippet.textContent = book.snippet;
-
-                    // السعر والتصنيف
-                    const meta = document.createElement('div');
-                    meta.className = 'flex items-center justify-between mt-3 pt-2 border-t border-gray-100';
-                    const price = document.createElement('span');
-                    price.className = 'price-tag';
-                    price.textContent = book.price;
-                    const category = document.createElement('span');
-                    category.className = 'text-xs text-gray-400';
-                    category.textContent = book.category;
-                    meta.appendChild(price);
-                    meta.appendChild(category);
-
-                    // الأزرار
-                    const actions = document.createElement('div');
-                    actions.className = 'flex gap-2 mt-3';
-                    const previewBtn = document.createElement('button');
-                    previewBtn.className = 'flex-1 btn-preview text-sm font-medium py-2 rounded-lg transition flex items-center justify-center gap-1';
-                    previewBtn.innerHTML = `<i class="fas fa-eye"></i> معاينة`;
-                    previewBtn.onclick = () => alert(`📖 معاينة: ${book.title}\nالمؤلف: ${book.author}\n${book.snippet}`);
-
-                    const downloadBtn = document.createElement('button');
-                    downloadBtn.className = 'flex-1 btn-download text-sm font-medium py-2 rounded-lg transition flex items-center justify-center gap-1';
-                    downloadBtn.innerHTML = `<i class="fas fa-file-pdf"></i> تحميل`;
-                    downloadBtn.onclick = () => alert(`📥 تحميل: ${book.title}\nسيتم توجيهك إلى رابط التحميل.`);
-
-                    actions.appendChild(previewBtn);
-                    actions.appendChild(downloadBtn);
-
-                    body.appendChild(title);
-                    body.appendChild(author);
-                    body.appendChild(snippet);
-                    body.appendChild(meta);
-                    body.appendChild(actions);
-
-                    card.appendChild(coverDiv);
-                    card.appendChild(body);
-                    grid.appendChild(card);
-                });
-            }
-
-            // الدالة الرئيسية لتطبيق جميع الفلاتر والترتيب
-            function applyFilters() {
-                const filtered = filterBooks();
-                const sorted = sortBooks(filtered);
-                renderBooks(sorted);
-            }
-
-            // =============================================
-            // 5. ربط الأحداث
-            // =============================================
-
-            // البحث عند الكتابة
-            searchInput.addEventListener('input', function() {
-                currentFilter.query = this.value;
-                applyFilters();
-            });
-
-            // زر البحث (نفس وظيفة الكتابة)
-            searchBtn.addEventListener('click', function() {
-                currentFilter.query = searchInput.value;
-                applyFilters();
-            });
-
-            // البحث عند الضغط على Enter
-            searchInput.addEventListener('keypress', function(e) {
-                if (e.key === 'Enter') {
-                    currentFilter.query = this.value;
-                    applyFilters();
-                }
-            });
-
-            // تغيير الترتيب
-            sortOrder.addEventListener('change', applyFilters);
-
-            // =============================================
-            // 6. العرض الأولي
-            // =============================================
+        // البحث عند الكتابة
+        searchInput.addEventListener('input', function() {
+            state.query = this.value;
             applyFilters();
+        });
 
-            // =============================================
-            // 7. (اختياري) محاكاة تحميل الكتب المميزة في الأعلى
-            // =============================================
-            // يمكن إضافة منطق لعرض الكتب المميزة أولاً إذا أردت
+        // زر البحث (نفس الوظيفة)
+        searchBtn.addEventListener('click', function() {
+            state.query = searchInput.value;
+            applyFilters();
+        });
 
-            console.log('📚 زهرة Zohra جاهزة! عدد الكتب:', booksDB.length);
+        // Enter
+        searchInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                state.query = this.value;
+                applyFilters();
+            }
+        });
 
-        })();
-    </script>
+        // إلغاء تصفية الحروف
+        clearAlphaBtn.addEventListener('click', function() {
+            state.alpha = null;
+            document.querySelectorAll('.alpha-filter button').forEach(b => b.classList.remove('active'));
+            applyFilters();
+        });
+
+        // تغيير الترتيب
+        sortOrder.addEventListener('change', applyFilters);
+
+        // ==============================
+        // 7. التهيئة والعرض الأولي
+        // ==============================
+        buildAlphaButtons();
+        applyFilters();
+
+        // تنبيه للمطور (يمكن إزالته)
+        console.log('✅ زهرة Zohra جاهزة! عدد الكتب:', books.length);
+
+    })();
+</script>
 
 </body>
 </html>
