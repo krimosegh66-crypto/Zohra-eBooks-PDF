@@ -1,10 +1,9 @@
-
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>زهرة Zohra - المكتبة الرقمية الذكية</title>
+    <title>زهرة Zohra - محرك البحث المزدوج</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
@@ -78,11 +77,41 @@
         .search-box button:hover { background: #f59e0b; }
         .empty-state { text-align: center; padding: 3rem 1rem; color: #6b7280; }
         .empty-state i { font-size: 3rem; color: #d1d5db; margin-bottom: 1rem; }
-        .loader { border: 4px solid #f3f3f3; border-top: 4px solid #4f46e5; border-radius: 50%; width: 2rem; height: 2rem; animation: spin 1s linear infinite; margin: 1rem auto; }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-        .source-badge { font-size: 0.6rem; background: #e5e7eb; color: #4b5563; padding: 0.1rem 0.5rem; border-radius: 999px; }
-        .source-badge.external { background: #dbeafe; color: #1e40af; }
-        .source-badge.local { background: #f3e8ff; color: #6d28d9; }
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 0.8rem 1.5rem;
+            border-radius: 1rem;
+            color: white;
+            font-weight: 600;
+            z-index: 999;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            display: none;
+            max-width: 90%;
+        }
+        .toast.success { background: #059669; }
+        .toast.error { background: #dc2626; }
+        .toast.info { background: #2563eb; }
+        .toast.show { display: block; animation: fadeInUp 0.4s ease; }
+        @keyframes fadeInUp { from { opacity:0; transform:translateX(-50%) translateY(20px); } to { opacity:1; transform:translateX(-50%) translateY(0); } }
+        .badge-external { background: #8b5cf6; color: white; font-size: 0.6rem; padding: 0.15rem 0.6rem; border-radius: 999px; margin-right: 0.5rem; }
+        .badge-local { background: #10b981; color: white; font-size: 0.6rem; padding: 0.15rem 0.6rem; border-radius: 999px; margin-right: 0.5rem; }
+        .engine-switch { background: #e5e7eb; padding: 0.2rem; border-radius: 999px; display: inline-flex; gap: 0.2rem; }
+        .engine-switch button { border: none; background: transparent; padding: 0.3rem 1rem; border-radius: 999px; font-weight: 600; font-size: 0.75rem; cursor: pointer; transition: 0.2s; }
+        .engine-switch button.active { background: white; color: #1e293b; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+        .engine-switch button:not(.active):hover { background: rgba(255,255,255,0.4); }
+        .loader {
+            display: inline-block;
+            width: 1.2rem;
+            height: 1.2rem;
+            border: 3px solid #e5e7eb;
+            border-top: 3px solid #4f46e5;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
     </style>
 </head>
 <body>
@@ -94,7 +123,7 @@
             <i class="fas fa-book-open text-3xl text-yellow-300"></i>
             <div>
                 <h1 class="text-2xl font-extrabold">زهرة <span class="text-yellow-300">Zohra</span></h1>
-                <p class="text-xs text-indigo-200">محرك بحث داخلي + عالمي</p>
+                <p class="text-xs text-indigo-200">محرك بحث مزدوج (داخلي + شبكي)</p>
             </div>
         </div>
         <div class="search-box flex items-center w-full md:w-auto md:min-w-[300px]">
@@ -108,9 +137,9 @@
 <!-- المحتوى الرئيسي -->
 <main class="max-w-7xl mx-auto px-4 py-6">
 
-    <!-- شريط الحروف -->
+    <!-- شريط الحروف والتحكم في المحرك -->
     <div class="bg-white rounded-2xl shadow-sm p-4 mb-6 border border-gray-100">
-        <div class="flex flex-col sm:flex-row sm:items-center gap-3">
+        <div class="flex flex-col sm:flex-row sm:items-center gap-3 flex-wrap">
             <span class="text-sm font-bold text-gray-700 flex items-center gap-2">
                 <i class="fas fa-sort-alpha-down text-indigo-500"></i> تصفح حسب الحرف:
             </span>
@@ -118,6 +147,14 @@
             <button id="clearAlphaBtn" class="text-sm text-gray-400 hover:text-gray-700 transition">
                 <i class="fas fa-times-circle"></i> إلغاء
             </button>
+            <div class="mr-auto flex items-center gap-2">
+                <span class="text-xs text-gray-500">المحرك:</span>
+                <div class="engine-switch" id="engineSwitch">
+                    <button class="active" data-engine="local">📚 داخلي</button>
+                    <button data-engine="external">🌐 شبكي (Open Library)</button>
+                    <button data-engine="hybrid">🔀 مزدوج</button>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -125,7 +162,7 @@
     <div class="flex flex-wrap items-center justify-between mb-4">
         <span id="resultCount" class="text-sm text-gray-500">
             <i class="fas fa-table ml-1"></i> <span id="countNumber">0</span> كتاب
-            <span id="externalCount" class="text-xs text-gray-400 mr-2"></span>
+            <span id="sourceBadge" class="text-xs text-gray-400 mr-2"></span>
         </span>
         <div class="flex items-center gap-2">
             <span class="text-sm text-gray-500">ترتيب:</span>
@@ -134,16 +171,10 @@
                 <option value="title">حسب العنوان</option>
                 <option value="author">حسب المؤلف</option>
             </select>
-            <button id="searchExternalBtn" class="text-xs bg-indigo-100 hover:bg-indigo-200 text-indigo-700 px-3 py-1.5 rounded-lg transition">
-                <i class="fas fa-globe"></i> بحث عالمي
+            <button id="refreshExternalBtn" class="text-xs bg-indigo-50 text-indigo-600 px-3 py-1 rounded-lg hover:bg-indigo-100 transition flex items-center gap-1">
+                <i class="fas fa-sync-alt"></i> تحديث
             </button>
         </div>
-    </div>
-
-    <!-- مؤشر التحميل -->
-    <div id="loader" class="hidden text-center my-6">
-        <div class="loader"></div>
-        <p class="text-sm text-gray-500">جاري جلب النتائج من المكتبات العالمية...</p>
     </div>
 
     <!-- شبكة الكتب -->
@@ -154,82 +185,203 @@
         <i class="fas fa-book-open"></i>
         <p class="text-lg font-medium">لا توجد كتب تطابق بحثك</p>
         <p class="text-sm text-gray-400">جرب تغيير كلمات البحث أو اختيار حرف آخر</p>
+        <p id="emptyHint" class="text-xs text-gray-400 mt-2"></p>
+    </div>
+
+    <!-- مؤشر تحميل خارجي -->
+    <div id="externalLoader" class="hidden text-center py-4">
+        <div class="loader inline-block"></div>
+        <span class="text-sm text-gray-500 mr-2">جاري البحث في المكتبات العالمية...</span>
     </div>
 
 </main>
 
+<!-- Toast الإشعارات -->
+<div id="toast" class="toast"></div>
+
 <!-- تذييل -->
 <footer class="bg-gray-900 text-gray-400 text-center py-6 mt-8">
-    <p class="text-sm">© 2026 <span class="text-white font-semibold">زهرة Zohra</span> — محرك بحث داخلي + Open Library API</p>
+    <p class="text-sm">© 2026 <span class="text-white font-semibold">زهرة Zohra</span> — محرك بحث داخلي + Open Library</p>
 </footer>
 
 <script>
     (function() {
         // ==============================
-        // 1. قاعدة بيانات الكتب المحلية
+        // 1. قاعدة البيانات المحلية
         // ==============================
         const localBooks = [
-            { id: 1, title: "أرض زيكولا", author: "عمرو عبد الحميد", year: 2020, category: "رواية", price: "1.00 €", snippet: "رواية خيالية علمية تأخذك إلى عالم موازٍ مليء بالألغاز.", cover: "https://picsum.photos/seed/zikola/400/300", source: 'local' },
-            { id: 2, title: "مقدمة ابن خلدون", author: "ابن خلدون", year: 1377, category: "فلسفة وتاريخ", price: "1.00 €", snippet: "الكتاب المؤسس لعلم الاجتماع والتاريخ.", cover: "https://picsum.photos/seed/ibnkh/400/300", source: 'local' },
-            { id: 3, title: "لأنك الله", author: "علي بن جابر الفيفي", year: 2018, category: "فكر وروحانيات", price: "1.00 €", snippet: "كتاب روحاني يستعرض أسماء الله الحسنى وتأملاتها.", cover: "https://picsum.photos/seed/llah/400/300", source: 'local' },
-            { id: 4, title: "البيان والتبيين", author: "الجاحظ", year: 850, category: "أدب وبلاغة", price: "1.00 €", snippet: "موسوعة أدبية وبلاغية من أهم كتب التراث.", cover: "https://picsum.photos/seed/bayan/400/300", source: 'local' },
-            { id: 5, title: "الأيام", author: "طه حسين", year: 1929, category: "سيرة ذاتية", price: "1.00 €", snippet: "سيرة عميد الأدب العربي منذ الطفولة حتى النضج.", cover: "https://picsum.photos/seed/ayam/400/300", source: 'local' },
-            { id: 6, title: "موسوعة الفلسفة الحديثة", author: "جماعة من الباحثين", year: 2015, category: "فلسفة", price: "1.00 €", snippet: "مرجع شامل يغطي أهم التيارات الفلسفية.", cover: "https://picsum.photos/seed/falsafa/400/300", source: 'local' },
-            { id: 7, title: "الذكاء الاصطناعي", author: "د. أحمد المنصور", year: 2023, category: "علوم حاسوب", price: "1.00 €", snippet: "مدخل شامل إلى الذكاء الاصطناعي وتطبيقاته.", cover: "https://picsum.photos/seed/ai/400/300", source: 'local' },
-            { id: 8, title: "هندسة البرمجيات", author: "د. سارة الخالدي", year: 2022, category: "هندسة", price: "1.00 €", snippet: "دليل متكامل لمنهجيات تطوير البرمجيات.", cover: "https://picsum.photos/seed/soft/400/300", source: 'local' },
-            { id: 9, title: "تاريخ الفلسفة الغربية", author: "د. رامي الحكيم", year: 2021, category: "فلسفة", price: "1.00 €", snippet: "رحلة عبر تطور الفكر الفلسفي من الإغريق.", cover: "https://picsum.photos/seed/phil/400/300", source: 'local' },
-            { id: 10, title: "الفيزياء الكمية", author: "د. نادر فوزي", year: 2024, category: "فيزياء", price: "1.00 €", snippet: "شرح مبسط لميكانيكا الكم مع رسوم توضيحية.", cover: "https://picsum.photos/seed/quantum/400/300", source: 'local' },
-            { id: 11, title: "تحليل البيانات بـ Python", author: "م. ليلى حسن", year: 2023, category: "علوم حاسوب", price: "1.00 €", snippet: "دليل عملي لتحليل البيانات باستخدام مكتبات Python.", cover: "https://picsum.photos/seed/pyData/400/300", source: 'local' },
-            { id: 12, title: "الأدب العباسي", author: "أ. أمل السعدي", year: 2020, category: "أدب", price: "1.00 €", snippet: "دراسة متعمقة للشعر والنثر في العصر العباسي.", cover: "https://picsum.photos/seed/abbasi/400/300", source: 'local' }
+            { id: 1, title: "أرض زيكولا", author: "عمرو عبد الحميد", year: 2020, category: "رواية", price: "1.00 €", snippet: "رواية خيالية علمية تأخذك إلى عالم موازٍ مليء بالألغاز.", cover: "https://picsum.photos/seed/zikola/400/300" },
+            { id: 2, title: "مقدمة ابن خلدون", author: "ابن خلدون", year: 1377, category: "فلسفة وتاريخ", price: "1.00 €", snippet: "الكتاب المؤسس لعلم الاجتماع والتاريخ.", cover: "https://picsum.photos/seed/ibnkh/400/300" },
+            { id: 3, title: "لأنك الله", author: "علي بن جابر الفيفي", year: 2018, category: "فكر وروحانيات", price: "1.00 €", snippet: "كتاب روحاني يستعرض أسماء الله الحسنى وتأملاتها.", cover: "https://picsum.photos/seed/llah/400/300" },
+            { id: 4, title: "البيان والتبيين", author: "الجاحظ", year: 850, category: "أدب وبلاغة", price: "1.00 €", snippet: "موسوعة أدبية وبلاغية من أهم كتب التراث.", cover: "https://picsum.photos/seed/bayan/400/300" },
+            { id: 5, title: "الأيام", author: "طه حسين", year: 1929, category: "سيرة ذاتية", price: "1.00 €", snippet: "سيرة عميد الأدب العربي منذ الطفولة حتى النضج.", cover: "https://picsum.photos/seed/ayam/400/300" },
+            { id: 6, title: "موسوعة الفلسفة الحديثة", author: "جماعة من الباحثين", year: 2015, category: "فلسفة", price: "1.00 €", snippet: "مرجع شامل يغطي أهم التيارات الفلسفية.", cover: "https://picsum.photos/seed/falsafa/400/300" },
+            { id: 7, title: "الذكاء الاصطناعي", author: "د. أحمد المنصور", year: 2023, category: "علوم حاسوب", price: "1.00 €", snippet: "مدخل شامل إلى الذكاء الاصطناعي وتطبيقاته.", cover: "https://picsum.photos/seed/ai/400/300" },
+            { id: 8, title: "هندسة البرمجيات", author: "د. سارة الخالدي", year: 2022, category: "هندسة", price: "1.00 €", snippet: "دليل متكامل لمنهجيات تطوير البرمجيات.", cover: "https://picsum.photos/seed/soft/400/300" },
+            { id: 9, title: "تاريخ الفلسفة الغربية", author: "د. رامي الحكيم", year: 2021, category: "فلسفة", price: "1.00 €", snippet: "رحلة عبر تطور الفكر الفلسفي من الإغريق.", cover: "https://picsum.photos/seed/phil/400/300" },
+            { id: 10, title: "الفيزياء الكمية", author: "د. نادر فوزي", year: 2024, category: "فيزياء", price: "1.00 €", snippet: "شرح مبسط لميكانيكا الكم مع رسوم توضيحية.", cover: "https://picsum.photos/seed/quantum/400/300" },
+            { id: 11, title: "تحليل البيانات بـ Python", author: "م. ليلى حسن", year: 2023, category: "علوم حاسوب", price: "1.00 €", snippet: "دليل عملي لتحليل البيانات باستخدام مكتبات Python.", cover: "https://picsum.photos/seed/pyData/400/300" },
+            { id: 12, title: "الأدب العباسي", author: "أ. أمل السعدي", year: 2020, category: "أدب", price: "1.00 €", snippet: "دراسة متعمقة للشعر والنثر في العصر العباسي.", cover: "https://picsum.photos/seed/abbasi/400/300" }
         ];
 
         // ==============================
-        // 2. متغيرات الحالة
-        // ==============================
-        let allBooks = [...localBooks]; // جميع الكتب (محلية + خارجية)
-        let externalBooks = []; // الكتب المستوردة من API
-        let isSearchingExternal = false;
-
-        const state = {
-            query: '',
-            alpha: null,
-        };
-
-        // ==============================
-        // 3. عناصر DOM
+        // 2. عناصر DOM
         // ==============================
         const grid = document.getElementById('booksGrid');
         const emptyState = document.getElementById('emptyState');
+        const emptyHint = document.getElementById('emptyHint');
         const countSpan = document.getElementById('countNumber');
-        const externalCountSpan = document.getElementById('externalCount');
+        const sourceBadge = document.getElementById('sourceBadge');
         const searchInput = document.getElementById('searchInput');
         const searchBtn = document.getElementById('searchBtn');
-        const searchExternalBtn = document.getElementById('searchExternalBtn');
         const alphaContainer = document.getElementById('alphaFilter');
         const clearAlphaBtn = document.getElementById('clearAlphaBtn');
         const sortOrder = document.getElementById('sortOrder');
-        const loader = document.getElementById('loader');
+        const refreshBtn = document.getElementById('refreshExternalBtn');
+        const externalLoader = document.getElementById('externalLoader');
+        const toast = document.getElementById('toast');
 
         // ==============================
-        // 4. دوال التصفية والترتيب والعرض
+        // 3. الحالة (State)
+        // ==============================
+        const state = {
+            query: '',
+            alpha: null,
+            engine: 'hybrid', // 'local', 'external', 'hybrid'
+            externalResults: [], // نتائج من Open Library
+            isExternalLoading: false,
+            externalError: false,
+        };
+
+        // ==============================
+        // 4. دوال مساعدة (Toast، عرض، إلخ)
+        // ==============================
+        function showToast(message, type = 'info') {
+            toast.className = `toast ${type} show`;
+            toast.textContent = message;
+            clearTimeout(toast._timeout);
+            toast._timeout = setTimeout(() => {
+                toast.classList.remove('show');
+            }, 5000);
+        }
+
+        // دالة لتوليد معرف فريد للكتب الخارجية (لتجنب الازدواجية)
+        function generateExternalId(doc, index) {
+            return 'ext_' + (doc.key || doc.olid || index);
+        }
+
+        // تحويل كتاب من Open Library إلى صيغة موحدة
+        function mapExternalBook(doc, index) {
+            const coverId = doc.cover_i;
+            let cover = `https://picsum.photos/seed/ext_${index}/400/300`;
+            if (coverId) cover = `https://covers.openlibrary.org/b/id/${coverId}-M.jpg`;
+            return {
+                id: generateExternalId(doc, index),
+                title: doc.title || 'عنوان غير معروف',
+                author: doc.author_name ? doc.author_name.join('، ') : 'مؤلف مجهول',
+                year: doc.first_publish_year || (doc.publish_year ? doc.publish_year[0] : 'سنة غير متوفرة'),
+                category: doc.subject ? (doc.subject[0] || 'عام') : 'عام',
+                price: 'مجاني',
+                snippet: doc.first_sentence ? (doc.first_sentence[0] || '') : '',
+                cover: cover,
+                isExternal: true,
+                url: `https://openlibrary.org${doc.key}`,
+            };
+        }
+
+        // ==============================
+        // 5. البحث الخارجي (Open Library)
+        // ==============================
+        async function fetchExternalBooks(query, author, lang, yearFrom, yearTo, category) {
+            if (state.isExternalLoading) return;
+            state.isExternalLoading = true;
+            externalLoader.classList.remove('hidden');
+            state.externalError = false;
+
+            try {
+                let q = query || '';
+                if (author) q += `+author:"${encodeURIComponent(author)}"`;
+                if (yearFrom && yearFrom > 0) q += `+first_publish_year:${yearFrom}`;
+                if (yearTo && yearTo > 0 && yearTo >= yearFrom) q += `-${yearTo}`;
+                if (lang) q += `+language:${lang}`;
+                if (category && category !== 'all') q += `+subject:${encodeURIComponent(category)}`;
+
+                if (!q.trim()) {
+                    // إذا كان الاستعلام فارغاً، نبحث عن كتب عامة (مثل 'fiction')
+                    q = 'fiction';
+                }
+
+                const url = `https://openlibrary.org/search.json?q=${encodeURIComponent(q)}&limit=20&sort=relevance`;
+                const response = await fetch(url);
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+
+                const data = await response.json();
+                if (data.docs && data.docs.length > 0) {
+                    state.externalResults = data.docs.map((doc, idx) => mapExternalBook(doc, idx));
+                    state.externalError = false;
+                    showToast(`✅ تم جلب ${state.externalResults.length} كتاب من Open Library`, 'success');
+                } else {
+                    state.externalResults = [];
+                    state.externalError = true;
+                    showToast('⚠️ لم يتم العثور على نتائج في Open Library', 'info');
+                }
+            } catch (error) {
+                console.error('Open Library error:', error);
+                state.externalResults = [];
+                state.externalError = true;
+                showToast('⚠️ فشل الاتصال بخادم Open Library. استخدم المحرك الداخلي.', 'error');
+            } finally {
+                state.isExternalLoading = false;
+                externalLoader.classList.add('hidden');
+                // إعادة عرض النتائج بعد التحديث
+                applyFilters();
+            }
+        }
+
+        // ==============================
+        // 6. دوال التصفية والترتيب والعرض
         // ==============================
 
-        // تصفية الكتب (محلية + خارجية)
-        function getFilteredBooks(booksList) {
+        // الحصول على الكتب حسب المحرك المختار
+        function getBooksForEngine() {
+            const engine = state.engine;
+            let books = [];
+
+            if (engine === 'local' || engine === 'hybrid') {
+                books = books.concat(localBooks);
+            }
+            if ((engine === 'external' || engine === 'hybrid') && state.externalResults.length > 0) {
+                books = books.concat(state.externalResults);
+            }
+            // إزالة المكررات حسب العنوان والمؤلف (لتجنب الازدواجية في الوضع المزدوج)
+            if (engine === 'hybrid') {
+                const seen = new Set();
+                books = books.filter(b => {
+                    const key = b.title + '|' + b.author;
+                    if (seen.has(key)) return false;
+                    seen.add(key);
+                    return true;
+                });
+            }
+            return books;
+        }
+
+        // تصفية الكتب حسب النص والحرف
+        function filterBooks(books) {
             const q = state.query.trim().toLowerCase();
             const alpha = state.alpha;
 
-            return booksList.filter(book => {
+            return books.filter(book => {
                 let matchQuery = true;
                 if (q) {
-                    const inTitle = (book.title || '').toLowerCase().includes(q);
-                    const inAuthor = (book.author || '').toLowerCase().includes(q);
+                    const inTitle = book.title.toLowerCase().includes(q);
+                    const inAuthor = book.author.toLowerCase().includes(q);
                     const inSnippet = (book.snippet || '').toLowerCase().includes(q);
                     matchQuery = inTitle || inAuthor || inSnippet;
                 }
                 let matchAlpha = true;
                 if (alpha) {
-                    const first = (book.title || '').trim()[0] || '';
+                    const first = book.title.trim()[0] || '';
                     matchAlpha = (first === alpha);
                 }
                 return matchQuery && matchAlpha;
@@ -237,13 +389,13 @@
         }
 
         // ترتيب النتائج
-        function sortBooks(booksList) {
+        function sortBooks(books) {
             const order = sortOrder.value;
-            const sorted = [...booksList];
+            const sorted = [...books];
             if (order === 'title') {
-                sorted.sort((a, b) => (a.title || '').localeCompare(b.title || '', 'ar'));
+                sorted.sort((a, b) => a.title.localeCompare(b.title, 'ar'));
             } else if (order === 'author') {
-                sorted.sort((a, b) => (a.author || '').localeCompare(b.author || '', 'ar'));
+                sorted.sort((a, b) => a.author.localeCompare(b.author, 'ar'));
             }
             return sorted;
         }
@@ -254,14 +406,31 @@
             if (booksList.length === 0) {
                 emptyState.classList.remove('hidden');
                 countSpan.textContent = '0';
-                externalCountSpan.textContent = '';
+                // نصائح إضافية
+                if (state.engine === 'external' && state.externalError) {
+                    emptyHint.textContent = '💡 تعذر الاتصال بـ Open Library. حاول تغيير المحرك إلى "داخلي" أو "مزدوج".';
+                } else {
+                    emptyHint.textContent = '';
+                }
+                // تحديث مصدر البيانات
+                let src = '';
+                if (state.engine === 'local') src = 'محلي';
+                else if (state.engine === 'external') src = 'شبكي';
+                else src = 'مزدوج';
+                sourceBadge.textContent = `المصدر: ${src}`;
                 return;
             }
             emptyState.classList.add('hidden');
-            const localCount = booksList.filter(b => b.source === 'local').length;
-            const externalCount = booksList.filter(b => b.source === 'external').length;
             countSpan.textContent = booksList.length;
-            externalCountSpan.textContent = externalCount > 0 ? `(+${externalCount} من الخارج)` : '';
+
+            // تحديد مصدر البيانات
+            let localCount = booksList.filter(b => !b.isExternal).length;
+            let externalCount = booksList.filter(b => b.isExternal).length;
+            let srcText = '';
+            if (state.engine === 'local') srcText = 'محلي';
+            else if (state.engine === 'external') srcText = 'شبكي';
+            else srcText = `مزدوج (محلي ${localCount} / شبكي ${externalCount})`;
+            sourceBadge.textContent = `المصدر: ${srcText}`;
 
             booksList.forEach(book => {
                 const card = document.createElement('div');
@@ -271,16 +440,29 @@
                 const coverDiv = document.createElement('div');
                 coverDiv.className = 'book-cover';
                 const img = document.createElement('img');
-                img.src = book.cover || 'https://picsum.photos/seed/' + (book.id || Math.random()) + '/400/300';
-                img.alt = book.title || 'كتاب';
+                img.src = book.cover;
+                img.alt = book.title;
                 img.onerror = function() {
                     this.style.display = 'none';
                     const fallback = document.createElement('div');
                     fallback.className = 'fallback';
-                    fallback.innerHTML = `<i class="fas fa-book"></i><span>${book.title || 'كتاب'}</span>`;
+                    fallback.innerHTML = `<i class="fas fa-book"></i><span>${book.title}</span>`;
                     coverDiv.appendChild(fallback);
                 };
                 coverDiv.appendChild(img);
+
+                // علامة المصدر (خارجي / محلي)
+                const sourceTag = document.createElement('span');
+                sourceTag.className = 'absolute top-2 right-2 text-[0.5rem] px-2 py-0.5 rounded-full';
+                if (book.isExternal) {
+                    sourceTag.classList.add('bg-purple-600', 'text-white');
+                    sourceTag.textContent = '🌐 شبكي';
+                } else {
+                    sourceTag.classList.add('bg-emerald-600', 'text-white');
+                    sourceTag.textContent = '📚 محلي';
+                }
+                coverDiv.style.position = 'relative';
+                coverDiv.appendChild(sourceTag);
 
                 // المحتوى
                 const body = document.createElement('div');
@@ -288,23 +470,18 @@
 
                 const titleEl = document.createElement('h3');
                 titleEl.className = 'text-base font-bold text-gray-800 line-clamp-2';
-                titleEl.textContent = book.title || 'عنوان غير معروف';
+                titleEl.textContent = book.title;
 
                 const authorEl = document.createElement('p');
                 authorEl.className = 'text-sm text-indigo-600 font-medium mt-1';
-                authorEl.textContent = book.author || 'مؤلف مجهول';
+                authorEl.textContent = book.author;
 
                 const snippetEl = document.createElement('p');
                 snippetEl.className = 'text-xs text-gray-500 mt-2 line-clamp-2 flex-grow';
                 snippetEl.textContent = book.snippet || 'لا يوجد مقتطف';
 
-                // مصدر الكتاب (محلي / خارجي)
-                const sourceBadge = document.createElement('span');
-                sourceBadge.className = `source-badge ${book.source === 'external' ? 'external' : 'local'} text-[0.5rem] px-2 py-0.5 rounded-full`;
-                sourceBadge.textContent = book.source === 'external' ? '🌐 عالمي' : '📚 محلي';
-
                 const meta = document.createElement('div');
-                meta.className = 'flex items-center justify-between mt-3 pt-2 border-t border-gray-100 flex-wrap gap-1';
+                meta.className = 'flex items-center justify-between mt-3 pt-2 border-t border-gray-100';
                 const price = document.createElement('span');
                 price.className = 'price-tag';
                 price.textContent = book.price || 'مجاني';
@@ -313,7 +490,6 @@
                 category.textContent = book.category || 'عام';
                 meta.appendChild(price);
                 meta.appendChild(category);
-                meta.appendChild(sourceBadge);
 
                 const actions = document.createElement('div');
                 actions.className = 'flex gap-2 mt-3';
@@ -321,19 +497,21 @@
                 previewBtn.className = 'flex-1 btn-preview text-sm font-medium py-2 rounded-lg transition flex items-center justify-center gap-1';
                 previewBtn.innerHTML = `<i class="fas fa-eye"></i> معاينة`;
                 previewBtn.onclick = () => {
-                    const info = `📖 معاينة: ${book.title || 'كتاب'}\nالمؤلف: ${book.author || 'مجهول'}\n${book.snippet || ''}`;
-                    alert(info);
+                    if (book.isExternal && book.url) {
+                        window.open(book.url, '_blank');
+                    } else {
+                        alert(`📖 معاينة: ${book.title}\nالمؤلف: ${book.author}\n${book.snippet}`);
+                    }
                 };
 
                 const downloadBtn = document.createElement('button');
                 downloadBtn.className = 'flex-1 btn-download text-sm font-medium py-2 rounded-lg transition flex items-center justify-center gap-1';
                 downloadBtn.innerHTML = `<i class="fas fa-file-pdf"></i> تحميل`;
                 downloadBtn.onclick = () => {
-                    const link = book.infoLink || book.previewLink || 'https://openlibrary.org';
-                    if (book.source === 'external') {
-                        window.open(link, '_blank');
+                    if (book.isExternal && book.url) {
+                        window.open(book.url, '_blank');
                     } else {
-                        alert(`📥 تحميل: ${book.title}\n(هذا كتاب محلي، يمكنك تحميله من المصدر)`);
+                        alert(`📥 تحميل: ${book.title}\nسيتم توجيهك إلى رابط التحميل.`);
                     }
                 };
 
@@ -352,96 +530,29 @@
             });
         }
 
-        // الدالة الرئيسية لتحديث الواجهة (من كل المصادر)
+        // الدالة الرئيسية لتطبيق جميع الفلاتر والترتيب والعرض
         function applyFilters() {
-            const filtered = getFilteredBooks(allBooks);
-            const sorted = sortBooks(filtered);
+            let allBooks = getBooksForEngine();
+            let filtered = filterBooks(allBooks);
+            let sorted = sortBooks(filtered);
             renderBooks(sorted);
         }
 
         // ==============================
-        // 5. البحث الخارجي (Open Library API)
-        // ==============================
-        async function searchExternal(query, author = '') {
-            if (!query && !author) return;
-            loader.classList.remove('hidden');
-            isSearchingExternal = true;
-
-            try {
-                let q = query;
-                if (author) q += `+author:"${encodeURIComponent(author)}"`;
-                const url = `https://openlibrary.org/search.json?q=${encodeURIComponent(q)}&limit=20&fields=title,author_name,publisher,publish_year,first_publish_year,cover_i,key,subject,language&sort=relevance`;
-
-                const response = await fetch(url);
-                if (!response.ok) throw new Error('فشل الاتصال');
-
-                const data = await response.json();
-                const docs = data.docs || [];
-
-                // تحويل النتائج إلى صيغة متوافقة مع بطاقاتنا
-                const newExternal = docs.map((doc, index) => {
-                    const coverId = doc.cover_i;
-                    let cover = `https://picsum.photos/seed/ext${index + Date.now()}/400/300`;
-                    if (coverId) cover = `https://covers.openlibrary.org/b/id/${coverId}-M.jpg`;
-
-                    return {
-                        id: `ext_${index}_${Date.now()}`,
-                        title: doc.title || 'عنوان غير معروف',
-                        author: doc.author_name ? doc.author_name.join('، ') : 'مؤلف مجهول',
-                        year: doc.first_publish_year || (doc.publish_year ? doc.publish_year[0] : ''),
-                        category: doc.subject ? doc.subject[0] : 'عام',
-                        price: 'مجاني',
-                        snippet: `من Open Library - ${doc.title || ''}`,
-                        cover: cover,
-                        source: 'external',
-                        previewLink: `https://openlibrary.org${doc.key}`,
-                        infoLink: `https://openlibrary.org${doc.key}`,
-                        language: doc.language ? doc.language[0] : '',
-                    };
-                });
-
-                // دمج النتائج الجديدة مع الموجودة (تجنب التكرار)
-                const existingIds = new Set(allBooks.map(b => b.id));
-                const filteredNew = newExternal.filter(b => !existingIds.has(b.id));
-
-                // إضافة إلى القائمة الكلية
-                allBooks = [...allBooks, ...filteredNew];
-                externalBooks = filteredNew;
-
-                // تحديث الواجهة
-                applyFilters();
-                loader.classList.add('hidden');
-                isSearchingExternal = false;
-
-                if (filteredNew.length === 0) {
-                    alert('⚠️ لم يتم العثور على نتائج جديدة من المكتبات العالمية.');
-                } else {
-                    alert(`✅ تم جلب ${filteredNew.length} كتاب من Open Library.`);
-                }
-
-            } catch (error) {
-                loader.classList.add('hidden');
-                isSearchingExternal = false;
-                alert('⚠️ فشل الاتصال بخادم Open Library. تأكد من اتصالك بالإنترنت.');
-                console.error('External search error:', error);
-            }
-        }
-
-        // ==============================
-        // 6. إنشاء أزرار الحروف
+        // 7. إنشاء أزرار الحروف
         // ==============================
         function buildAlphaButtons() {
             const arabicLetters = ['أ','ب','ت','ث','ج','ح','خ','د','ذ','ر','ز','س','ش','ص','ض','ط','ظ','ع','غ','ف','ق','ك','ل','م','ن','ه','و','ي'];
-            // استخراج الحروف من جميع الكتب (محلية + خارجية)
+            // استخراج الحروف المستخدمة فعلاً في عناوين الكتب المحلية
             const used = new Set();
-            allBooks.forEach(book => {
-                const first = (book.title || '').trim()[0] || '';
+            localBooks.forEach(book => {
+                const first = book.title.trim()[0] || '';
                 if (arabicLetters.includes(first)) used.add(first);
             });
-            const sorted = arabicLetters.filter(ch => used.has(ch));
 
             alphaContainer.innerHTML = '';
-            sorted.forEach(ch => {
+            arabicLetters.forEach(ch => {
+                if (!used.has(ch)) return;
                 const btn = document.createElement('button');
                 btn.textContent = ch;
                 btn.dataset.letter = ch;
@@ -461,36 +572,40 @@
         }
 
         // ==============================
-        // 7. ربط الأحداث
+        // 8. ربط الأحداث
         // ==============================
 
-        // البحث الداخلي (فوري)
+        // البحث عند الكتابة
         searchInput.addEventListener('input', function() {
             state.query = this.value;
+            // إذا كان المحرك خارجياً أو مزدوجاً، نبحث تلقائياً (مع تأخير)
+            if (state.engine === 'external' || state.engine === 'hybrid') {
+                clearTimeout(window._searchTimeout);
+                window._searchTimeout = setTimeout(() => {
+                    fetchExternalBooks(state.query, '', '', '', '', '');
+                }, 600);
+            }
             applyFilters();
         });
 
+        // زر البحث
         searchBtn.addEventListener('click', function() {
             state.query = searchInput.value;
+            if (state.engine === 'external' || state.engine === 'hybrid') {
+                fetchExternalBooks(state.query, '', '', '', '', '');
+            }
             applyFilters();
         });
 
+        // Enter
         searchInput.addEventListener('keypress', function(e) {
             if (e.key === 'Enter') {
                 state.query = this.value;
+                if (state.engine === 'external' || state.engine === 'hybrid') {
+                    fetchExternalBooks(state.query, '', '', '', '', '');
+                }
                 applyFilters();
             }
-        });
-
-        // البحث الخارجي (عند الضغط على الزر)
-        searchExternalBtn.addEventListener('click', function() {
-            const query = searchInput.value.trim();
-            const author = ''; // يمكن استخراج المؤلف من النص إذا أردت
-            if (!query) {
-                alert('الرجاء إدخال كلمة بحث أولاً.');
-                return;
-            }
-            searchExternal(query, author);
         });
 
         // إلغاء تصفية الحروف
@@ -503,14 +618,55 @@
         // تغيير الترتيب
         sortOrder.addEventListener('change', applyFilters);
 
+        // تغيير المحرك
+        document.querySelectorAll('#engineSwitch button').forEach(btn => {
+            btn.addEventListener('click', function() {
+                document.querySelectorAll('#engineSwitch button').forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+                state.engine = this.dataset.engine;
+
+                // إذا كان المحرك الخارجي أو المزدوج، نحاول جلب البيانات إذا لم تكن موجودة
+                if ((state.engine === 'external' || state.engine === 'hybrid') && state.externalResults.length === 0 && !state.isExternalLoading) {
+                    const query = state.query || 'fiction';
+                    fetchExternalBooks(query, '', '', '', '', '');
+                } else {
+                    applyFilters();
+                }
+            });
+        });
+
+        // زر تحديث النتائج الخارجية
+        refreshBtn.addEventListener('click', function() {
+            if (state.engine === 'external' || state.engine === 'hybrid') {
+                const query = state.query || 'fiction';
+                fetchExternalBooks(query, '', '', '', '', '');
+            } else {
+                showToast('⚠️ المحرك الحالي لا يستخدم المصادر الشبكية.', 'info');
+            }
+        });
+
         // ==============================
-        // 8. التهيئة والعرض الأولي
+        // 9. تهيئة أولية
         // ==============================
         buildAlphaButtons();
+
+        // جلب بيانات خارجية افتراضية (لإثراء التجربة)
+        setTimeout(() => {
+            if (state.engine === 'hybrid' || state.engine === 'external') {
+                fetchExternalBooks('fiction', '', '', '', '', '');
+            }
+        }, 500);
+
+        // العرض الأولي
         applyFilters();
 
-        console.log('✅ زهرة Zohra جاهزة! (محلي + خارجي)');
-        console.log(`📚 ${localBooks.length} كتاب محلي، يمكن البحث عن المزيد عالمياً.`);
+        console.log('✅ زهرة Zohra - المحرك المزدوج جاهز! عدد الكتب المحلية:', localBooks.length);
+
+        // ==============================
+        // 10. التعامل مع الفلاتر الجانبية (اختياري)
+        // ==============================
+        // يمكن إضافة فلاتر اللغة والسنة والتصنيف عبر واجهة إضافية
+        // لكننا نكتفي بالمحرك الأساسي
 
     })();
 </script>
