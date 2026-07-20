@@ -1,10 +1,32 @@
-<!DOCTYPE html>
+
+html_code = '''<!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>مكتبة أكاديمية - نتائج البحث</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fade-in {
+            animation: fadeIn 0.3s ease-out;
+        }
+        .line-clamp-2 {
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+        .line-clamp-3 {
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+    </style>
 </head>
 <body class="min-h-screen bg-gray-50 text-gray-800">
 
@@ -13,7 +35,7 @@
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
       <div class="flex flex-col md:flex-row items-center gap-4">
         <!-- Logo -->
-        <div class="flex items-center gap-2 shrink-0">
+        <div class="flex items-center gap-2 shrink-0 cursor-pointer" onclick="resetSearch()">
           <div class="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center text-white font-bold text-xl">
             📚
           </div>
@@ -24,11 +46,13 @@
         <div class="flex-1 w-full max-w-3xl">
           <div class="relative">
             <input
+              id="searchInput"
               type="text"
               placeholder="ابحث عن كتاب، مؤلف، أو ISBN..."
               class="w-full pr-12 pl-4 py-3 bg-gray-100 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all text-right"
+              onkeyup="handleSearch(event)"
             />
-            <button class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-blue-600">
+            <button class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-blue-600" onclick="performSearch()">
               <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
               </svg>
@@ -36,17 +60,17 @@
           </div>
 
           <!-- Quick Filters -->
-          <div class="flex flex-wrap gap-2 mt-3 justify-end">
-            <button class="px-4 py-1.5 text-sm font-medium bg-blue-600 text-white rounded-full hover:bg-blue-700 transition-colors">
+          <div class="flex flex-wrap gap-2 mt-3 justify-end" id="quickFilters">
+            <button class="px-4 py-1.5 text-sm font-medium bg-blue-600 text-white rounded-full hover:bg-blue-700 transition-colors" onclick="setQuickFilter('all', this)">
               الكل
             </button>
-            <button class="px-4 py-1.5 text-sm font-medium bg-white text-gray-600 border border-gray-300 rounded-full hover:bg-gray-50 transition-colors">
+            <button class="px-4 py-1.5 text-sm font-medium bg-white text-gray-600 border border-gray-300 rounded-full hover:bg-gray-50 transition-colors" onclick="setQuickFilter('title', this)">
               العنوان
             </button>
-            <button class="px-4 py-1.5 text-sm font-medium bg-white text-gray-600 border border-gray-300 rounded-full hover:bg-gray-50 transition-colors">
+            <button class="px-4 py-1.5 text-sm font-medium bg-white text-gray-600 border border-gray-300 rounded-full hover:bg-gray-50 transition-colors" onclick="setQuickFilter('author', this)">
               المؤلف
             </button>
-            <button class="px-4 py-1.5 text-sm font-medium bg-white text-gray-600 border border-gray-300 rounded-full hover:bg-gray-50 transition-colors">
+            <button class="px-4 py-1.5 text-sm font-medium bg-white text-gray-600 border border-gray-300 rounded-full hover:bg-gray-50 transition-colors" onclick="setQuickFilter('isbn', this)">
               ISBN
             </button>
           </div>
@@ -55,18 +79,18 @@
         <!-- View Toggle & User -->
         <div class="flex items-center gap-3 shrink-0">
           <div class="flex bg-gray-100 rounded-lg p-1">
-            <button class="p-2 rounded-md bg-white shadow-sm text-blue-600">
+            <button id="gridViewBtn" class="p-2 rounded-md bg-white shadow-sm text-blue-600" onclick="switchView('grid')">
               <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
               </svg>
             </button>
-            <button class="p-2 rounded-md text-gray-500 hover:text-gray-700">
+            <button id="listViewBtn" class="p-2 rounded-md text-gray-500 hover:text-gray-700" onclick="switchView('list')">
               <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
               </svg>
             </button>
           </div>
-          <div class="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-bold">
+          <div class="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-bold cursor-pointer hover:shadow-lg transition-shadow" onclick="showUserProfile()">
             أ
           </div>
         </div>
@@ -81,27 +105,27 @@
         <div class="bg-white rounded-xl border border-gray-200 p-5 sticky top-24">
           <div class="flex items-center justify-between mb-4">
             <h3 class="font-bold text-lg text-gray-900">تصفية النتائج</h3>
-            <button class="text-sm text-blue-600 hover:text-blue-700 font-medium">إعادة ضبط</button>
+            <button class="text-sm text-blue-600 hover:text-blue-700 font-medium" onclick="resetFilters()">إعادة ضبط</button>
           </div>
 
           <!-- Publication Year -->
           <div class="mb-6">
             <h4 class="font-semibold text-gray-700 mb-3 text-sm">سنة النشر</h4>
-            <div class="space-y-2">
+            <div class="space-y-2" id="yearFilters">
               <label class="flex items-center gap-2 cursor-pointer">
-                <input type="checkbox" class="w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500" />
+                <input type="checkbox" class="w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500" value="2024-2025" onchange="applyFilters()" />
                 <span class="text-sm text-gray-600">2024 - 2025</span>
               </label>
               <label class="flex items-center gap-2 cursor-pointer">
-                <input type="checkbox" class="w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500" checked />
+                <input type="checkbox" class="w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500" value="2020-2023" checked onchange="applyFilters()" />
                 <span class="text-sm text-gray-600">2020 - 2023</span>
               </label>
               <label class="flex items-center gap-2 cursor-pointer">
-                <input type="checkbox" class="w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500" />
+                <input type="checkbox" class="w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500" value="2015-2019" onchange="applyFilters()" />
                 <span class="text-sm text-gray-600">2015 - 2019</span>
               </label>
               <label class="flex items-center gap-2 cursor-pointer">
-                <input type="checkbox" class="w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500" />
+                <input type="checkbox" class="w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500" value="before-2015" onchange="applyFilters()" />
                 <span class="text-sm text-gray-600">قبل 2015</span>
               </label>
             </div>
@@ -110,17 +134,17 @@
           <!-- Language -->
           <div class="mb-6">
             <h4 class="font-semibold text-gray-700 mb-3 text-sm">اللغة</h4>
-            <div class="space-y-2">
+            <div class="space-y-2" id="langFilters">
               <label class="flex items-center gap-2 cursor-pointer">
-                <input type="checkbox" class="w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500" checked />
+                <input type="checkbox" class="w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500" value="ar" checked onchange="applyFilters()" />
                 <span class="text-sm text-gray-600">العربية</span>
               </label>
               <label class="flex items-center gap-2 cursor-pointer">
-                <input type="checkbox" class="w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500" checked />
+                <input type="checkbox" class="w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500" value="en" checked onchange="applyFilters()" />
                 <span class="text-sm text-gray-600">English</span>
               </label>
               <label class="flex items-center gap-2 cursor-pointer">
-                <input type="checkbox" class="w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500" />
+                <input type="checkbox" class="w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500" value="fr" onchange="applyFilters()" />
                 <span class="text-sm text-gray-600">Français</span>
               </label>
             </div>
@@ -129,21 +153,21 @@
           <!-- Access Type -->
           <div class="mb-6">
             <h4 class="font-semibold text-gray-700 mb-3 text-sm">نوع الوصول</h4>
-            <div class="space-y-2">
+            <div class="space-y-2" id="accessFilters">
               <label class="flex items-center gap-2 cursor-pointer">
-                <input type="radio" name="access" class="w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500" checked />
+                <input type="radio" name="access" class="w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500" value="all" checked onchange="applyFilters()" />
                 <span class="text-sm text-gray-600">الكل</span>
               </label>
               <label class="flex items-center gap-2 cursor-pointer">
-                <input type="radio" name="access" class="w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500" />
+                <input type="radio" name="access" class="w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500" value="preview" onchange="applyFilters()" />
                 <span class="text-sm text-gray-600">معاينة مجانية</span>
               </label>
               <label class="flex items-center gap-2 cursor-pointer">
-                <input type="radio" name="access" class="w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500" />
+                <input type="radio" name="access" class="w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500" value="full" onchange="applyFilters()" />
                 <span class="text-sm text-gray-600">نص كامل</span>
               </label>
               <label class="flex items-center gap-2 cursor-pointer">
-                <input type="radio" name="access" class="w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500" />
+                <input type="radio" name="access" class="w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500" value="pdf" onchange="applyFilters()" />
                 <span class="text-sm text-gray-600">PDF متاح للتنزيل</span>
               </label>
             </div>
@@ -152,37 +176,37 @@
           <!-- Book Category -->
           <div class="mb-6">
             <h4 class="font-semibold text-gray-700 mb-3 text-sm">تصنيف الكتاب</h4>
-            <div class="space-y-2 max-h-48 overflow-y-auto pr-1">
+            <div class="space-y-2 max-h-48 overflow-y-auto pr-1" id="catFilters">
               <label class="flex items-center gap-2 cursor-pointer">
-                <input type="checkbox" class="w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500" />
+                <input type="checkbox" class="w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500" value="cs" onchange="applyFilters()" />
                 <span class="text-sm text-gray-600">علوم الحاسوب</span>
               </label>
               <label class="flex items-center gap-2 cursor-pointer">
-                <input type="checkbox" class="w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500" checked />
+                <input type="checkbox" class="w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500" value="eng" checked onchange="applyFilters()" />
                 <span class="text-sm text-gray-600">الهندسة</span>
               </label>
               <label class="flex items-center gap-2 cursor-pointer">
-                <input type="checkbox" class="w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500" />
+                <input type="checkbox" class="w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500" value="med" onchange="applyFilters()" />
                 <span class="text-sm text-gray-600">الطب</span>
               </label>
               <label class="flex items-center gap-2 cursor-pointer">
-                <input type="checkbox" class="w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500" />
+                <input type="checkbox" class="w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500" value="soc" onchange="applyFilters()" />
                 <span class="text-sm text-gray-600">العلوم الاجتماعية</span>
               </label>
               <label class="flex items-center gap-2 cursor-pointer">
-                <input type="checkbox" class="w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500" />
+                <input type="checkbox" class="w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500" value="lit" onchange="applyFilters()" />
                 <span class="text-sm text-gray-600">الأدب والفلسفة</span>
               </label>
               <label class="flex items-center gap-2 cursor-pointer">
-                <input type="checkbox" class="w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500" />
+                <input type="checkbox" class="w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500" value="math" onchange="applyFilters()" />
                 <span class="text-sm text-gray-600">الرياضيات</span>
               </label>
               <label class="flex items-center gap-2 cursor-pointer">
-                <input type="checkbox" class="w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500" />
+                <input type="checkbox" class="w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500" value="phy" onchange="applyFilters()" />
                 <span class="text-sm text-gray-600">الفيزياء</span>
               </label>
               <label class="flex items-center gap-2 cursor-pointer">
-                <input type="checkbox" class="w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500" />
+                <input type="checkbox" class="w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500" value="hist" onchange="applyFilters()" />
                 <span class="text-sm text-gray-600">التاريخ</span>
               </label>
             </div>
@@ -191,17 +215,17 @@
           <!-- Rating Filter -->
           <div>
             <h4 class="font-semibold text-gray-700 mb-3 text-sm">التقييم</h4>
-            <div class="space-y-2">
+            <div class="space-y-2" id="ratingFilters">
               <label class="flex items-center gap-2 cursor-pointer">
-                <input type="radio" name="rating" class="w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500" />
+                <input type="radio" name="rating" class="w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500" value="5" onchange="applyFilters()" />
                 <span class="flex text-yellow-400 text-sm">★★★★★ <span class="text-gray-400 mr-1">وأعلى</span></span>
               </label>
               <label class="flex items-center gap-2 cursor-pointer">
-                <input type="radio" name="rating" class="w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500" />
+                <input type="radio" name="rating" class="w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500" value="4" onchange="applyFilters()" />
                 <span class="flex text-yellow-400 text-sm">★★★★☆ <span class="text-gray-400 mr-1">وأعلى</span></span>
               </label>
               <label class="flex items-center gap-2 cursor-pointer">
-                <input type="radio" name="rating" class="w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500" />
+                <input type="radio" name="rating" class="w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500" value="3" onchange="applyFilters()" />
                 <span class="flex text-yellow-400 text-sm">★★★☆☆ <span class="text-gray-400 mr-1">وأعلى</span></span>
               </label>
             </div>
@@ -215,301 +239,57 @@
         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
           <div>
             <h2 class="text-2xl font-bold text-gray-900">نتائج البحث</h2>
-            <p class="text-gray-500 mt-1">تم العثور على <span class="font-semibold text-blue-600">1,248</span> نتيجة لـ "<span class="font-semibold">تعلم الآلة</span>"</p>
+            <p class="text-gray-500 mt-1">تم العثور على <span id="resultCount" class="font-semibold text-blue-600">6</span> نتيجة لـ "<span id="searchTerm" class="font-semibold">تعلم الآلة</span>"</p>
           </div>
           <div class="flex items-center gap-3">
             <span class="text-sm text-gray-500">ترتيب حسب:</span>
-            <select class="bg-white border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer">
-              <option>الأكثر صلة</option>
-              <option>الأحدث</option>
-              <option>الأكثر زيارة</option>
-              <option>التقييم</option>
+            <select id="sortSelect" class="bg-white border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer" onchange="sortBooks()">
+              <option value="relevance">الأكثر صلة</option>
+              <option value="newest">الأحدث</option>
+              <option value="popular">الأكثر زيارة</option>
+              <option value="rating">التقييم</option>
             </select>
           </div>
         </div>
 
         <!-- Active Filters Tags -->
-        <div class="flex flex-wrap gap-2 mb-6">
+        <div class="flex flex-wrap gap-2 mb-6" id="activeFilters">
           <span class="inline-flex items-center gap-1 px-3 py-1 bg-blue-50 text-blue-700 rounded-full text-sm border border-blue-200">
             2020 - 2023
-            <button class="hover:text-blue-900">×</button>
+            <button class="hover:text-blue-900 font-bold" onclick="removeFilter('year', '2020-2023')">×</button>
           </span>
           <span class="inline-flex items-center gap-1 px-3 py-1 bg-blue-50 text-blue-700 rounded-full text-sm border border-blue-200">
             العربية
-            <button class="hover:text-blue-900">×</button>
+            <button class="hover:text-blue-900 font-bold" onclick="removeFilter('lang', 'ar')">×</button>
           </span>
           <span class="inline-flex items-center gap-1 px-3 py-1 bg-blue-50 text-blue-700 rounded-full text-sm border border-blue-200">
             English
-            <button class="hover:text-blue-900">×</button>
+            <button class="hover:text-blue-900 font-bold" onclick="removeFilter('lang', 'en')">×</button>
           </span>
           <span class="inline-flex items-center gap-1 px-3 py-1 bg-blue-50 text-blue-700 rounded-full text-sm border border-blue-200">
             الهندسة
-            <button class="hover:text-blue-900">×</button>
+            <button class="hover:text-blue-900 font-bold" onclick="removeFilter('cat', 'eng')">×</button>
           </span>
         </div>
 
         <!-- Book Cards Grid -->
-        <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-          <!-- Book Card 1 -->
-          <div class="bg-white rounded-xl border border-gray-200 overflow-hidden hover:shadow-lg transition-shadow group">
-            <div class="relative h-48 bg-gradient-to-br from-blue-100 to-indigo-100 flex items-center justify-center overflow-hidden">
-              <div class="text-6xl">🤖</div>
-              <div class="absolute top-3 left-3 bg-green-500 text-white text-xs font-bold px-2 py-1 rounded-full">نص كامل</div>
-              <div class="absolute top-3 right-3 bg-white/90 backdrop-blur text-gray-700 text-xs font-bold px-2 py-1 rounded-full">PDF</div>
-            </div>
-            <div class="p-5">
-              <div class="flex items-start justify-between gap-2 mb-2">
-                <h3 class="font-bold text-lg text-gray-900 leading-tight group-hover:text-blue-600 transition-colors">مقدمة في تعلم الآلة العميق</h3>
-              </div>
-              <p class="text-sm text-gray-500 mb-3">د. أحمد محمد الخالدي</p>
-              <div class="flex items-center gap-1 mb-3 text-yellow-400 text-sm">
-                ★★★★★ <span class="text-gray-400 text-xs">(4.8)</span>
-              </div>
-              <p class="text-sm text-gray-600 leading-relaxed mb-4 line-clamp-3">
-                يقدم هذا الكتاب شرحاً مفصلاً لأساسيات <span class="bg-yellow-100 text-yellow-800 px-1 rounded font-medium">تعلم الآلة</span> والشبكات العصبية العميقة، مع تطبيقات عملية باستخدام Python وTensorFlow...
-              </p>
-              <div class="flex items-center gap-2 text-xs text-gray-400 mb-4">
-                <span>2022</span>
-                <span>•</span>
-                <span>العربية</span>
-                <span>•</span>
-                <span>علوم الحاسوب</span>
-              </div>
-              <div class="flex gap-2">
-                <button class="flex-1 bg-blue-600 text-white py-2.5 rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors flex items-center justify-center gap-2">
-                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                  </svg>
-                  معاينة الكتاب
-                </button>
-                <button class="flex-1 bg-gray-100 text-gray-700 py-2.5 rounded-lg text-sm font-medium hover:bg-gray-200 transition-colors flex items-center justify-center gap-2">
-                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-                  </svg>
-                  تحميل PDF
-                </button>
-              </div>
-            </div>
-          </div>
-
-          <!-- Book Card 2 -->
-          <div class="bg-white rounded-xl border border-gray-200 overflow-hidden hover:shadow-lg transition-shadow group">
-            <div class="relative h-48 bg-gradient-to-br from-emerald-100 to-teal-100 flex items-center justify-center overflow-hidden">
-              <div class="text-6xl">📊</div>
-              <div class="absolute top-3 left-3 bg-amber-500 text-white text-xs font-bold px-2 py-1 rounded-full">معاينة مجانية</div>
-            </div>
-            <div class="p-5">
-              <h3 class="font-bold text-lg text-gray-900 leading-tight mb-2 group-hover:text-blue-600 transition-colors">الإحصاء التطبيقي في البحث العلمي</h3>
-              <p class="text-sm text-gray-500 mb-3">د. سارة عبدالله القحطاني</p>
-              <div class="flex items-center gap-1 mb-3 text-yellow-400 text-sm">
-                ★★★★☆ <span class="text-gray-400 text-xs">(4.5)</span>
-              </div>
-              <p class="text-sm text-gray-600 leading-relaxed mb-4 line-clamp-3">
-                دليل شامل لاستخدام الأساليب الإحصائية في البحث العلمي، يتضمن أمثلة تطبيقية على <span class="bg-yellow-100 text-yellow-800 px-1 rounded font-medium">تعلم الآلة</span> وتحليل البيانات...
-              </p>
-              <div class="flex items-center gap-2 text-xs text-gray-400 mb-4">
-                <span>2023</span>
-                <span>•</span>
-                <span>العربية</span>
-                <span>•</span>
-                <span>الرياضيات</span>
-              </div>
-              <div class="flex gap-2">
-                <button class="flex-1 bg-blue-600 text-white py-2.5 rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors flex items-center justify-center gap-2">
-                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                  </svg>
-                  معاينة الكتاب
-                </button>
-                <button class="flex-1 bg-gray-100 text-gray-400 py-2.5 rounded-lg text-sm font-medium cursor-not-allowed flex items-center justify-center gap-2">
-                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-                  </svg>
-                  تحميل PDF
-                </button>
-              </div>
-            </div>
-          </div>
-
-          <!-- Book Card 3 -->
-          <div class="bg-white rounded-xl border border-gray-200 overflow-hidden hover:shadow-lg transition-shadow group">
-            <div class="relative h-48 bg-gradient-to-br from-purple-100 to-pink-100 flex items-center justify-center overflow-hidden">
-              <div class="text-6xl">🧠</div>
-              <div class="absolute top-3 left-3 bg-green-500 text-white text-xs font-bold px-2 py-1 rounded-full">نص كامل</div>
-              <div class="absolute top-3 right-3 bg-white/90 backdrop-blur text-gray-700 text-xs font-bold px-2 py-1 rounded-full">PDF</div>
-            </div>
-            <div class="p-5">
-              <h3 class="font-bold text-lg text-gray-900 leading-tight mb-2 group-hover:text-blue-600 transition-colors">Python for Machine Learning: A Practical Guide</h3>
-              <p class="text-sm text-gray-500 mb-3">Dr. James Anderson</p>
-              <div class="flex items-center gap-1 mb-3 text-yellow-400 text-sm">
-                ★★★★★ <span class="text-gray-400 text-xs">(4.9)</span>
-              </div>
-              <p class="text-sm text-gray-600 leading-relaxed mb-4 line-clamp-3">
-                A comprehensive guide to <span class="bg-yellow-100 text-yellow-800 px-1 rounded font-medium">machine learning</span> with Python, covering scikit-learn, TensorFlow, and real-world projects...
-              </p>
-              <div class="flex items-center gap-2 text-xs text-gray-400 mb-4">
-                <span>2021</span>
-                <span>•</span>
-                <span>English</span>
-                <span>•</span>
-                <span>Computer Science</span>
-              </div>
-              <div class="flex gap-2">
-                <button class="flex-1 bg-blue-600 text-white py-2.5 rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors flex items-center justify-center gap-2">
-                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                  </svg>
-                  Preview Book
-                </button>
-                <button class="flex-1 bg-gray-100 text-gray-700 py-2.5 rounded-lg text-sm font-medium hover:bg-gray-200 transition-colors flex items-center justify-center gap-2">
-                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-                  </svg>
-                  Download PDF
-                </button>
-              </div>
-            </div>
-          </div>
-
-          <!-- Book Card 4 -->
-          <div class="bg-white rounded-xl border border-gray-200 overflow-hidden hover:shadow-lg transition-shadow group">
-            <div class="relative h-48 bg-gradient-to-br from-orange-100 to-red-100 flex items-center justify-center overflow-hidden">
-              <div class="text-6xl">🏗️</div>
-              <div class="absolute top-3 left-3 bg-amber-500 text-white text-xs font-bold px-2 py-1 rounded-full">معاينة مجانية</div>
-            </div>
-            <div class="p-5">
-              <h3 class="font-bold text-lg text-gray-900 leading-tight mb-2 group-hover:text-blue-600 transition-colors">الهندسة المدنية: المبادئ والتطبيقات الحديثة</h3>
-              <p class="text-sm text-gray-500 mb-3">د. خالد بن سليمان العمري</p>
-              <div class="flex items-center gap-1 mb-3 text-yellow-400 text-sm">
-                ★★★★☆ <span class="text-gray-400 text-xs">(4.3)</span>
-              </div>
-              <p class="text-sm text-gray-600 leading-relaxed mb-4 line-clamp-3">
-                يغطي هذا الكتاب المبادئ الأساسية للهندسة المدنية مع التركيز على التقنيات الحديثة واستخدام <span class="bg-yellow-100 text-yellow-800 px-1 rounded font-medium">تعلم الآلة</span> في تحليل البيانات الإنشائية...
-              </p>
-              <div class="flex items-center gap-2 text-xs text-gray-400 mb-4">
-                <span>2020</span>
-                <span>•</span>
-                <span>العربية</span>
-                <span>•</span>
-                <span>الهندسة</span>
-              </div>
-              <div class="flex gap-2">
-                <button class="flex-1 bg-blue-600 text-white py-2.5 rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors flex items-center justify-center gap-2">
-                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                  </svg>
-                  معاينة الكتاب
-                </button>
-                <button class="flex-1 bg-gray-100 text-gray-400 py-2.5 rounded-lg text-sm font-medium cursor-not-allowed flex items-center justify-center gap-2">
-                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-                  </svg>
-                  تحميل PDF
-                </button>
-              </div>
-            </div>
-          </div>
-
-          <!-- Book Card 5 -->
-          <div class="bg-white rounded-xl border border-gray-200 overflow-hidden hover:shadow-lg transition-shadow group">
-            <div class="relative h-48 bg-gradient-to-br from-cyan-100 to-blue-100 flex items-center justify-center overflow-hidden">
-              <div class="text-6xl">📡</div>
-              <div class="absolute top-3 left-3 bg-green-500 text-white text-xs font-bold px-2 py-1 rounded-full">نص كامل</div>
-              <div class="absolute top-3 right-3 bg-white/90 backdrop-blur text-gray-700 text-xs font-bold px-2 py-1 rounded-full">PDF</div>
-            </div>
-            <div class="p-5">
-              <h3 class="font-bold text-lg text-gray-900 leading-tight mb-2 group-hover:text-blue-600 transition-colors">Neural Networks and Deep Learning</h3>
-              <p class="text-sm text-gray-500 mb-3">Dr. Michael Nielsen</p>
-              <div class="flex items-center gap-1 mb-3 text-yellow-400 text-sm">
-                ★★★★★ <span class="text-gray-400 text-xs">(4.7)</span>
-              </div>
-              <p class="text-sm text-gray-600 leading-relaxed mb-4 line-clamp-3">
-                This book provides a theoretical and practical foundation for understanding <span class="bg-yellow-100 text-yellow-800 px-1 rounded font-medium">machine learning</span> through neural networks and deep architectures...
-              </p>
-              <div class="flex items-center gap-2 text-xs text-gray-400 mb-4">
-                <span>2022</span>
-                <span>•</span>
-                <span>English</span>
-                <span>•</span>
-                <span>Computer Science</span>
-              </div>
-              <div class="flex gap-2">
-                <button class="flex-1 bg-blue-600 text-white py-2.5 rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors flex items-center justify-center gap-2">
-                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                  </svg>
-                  Preview Book
-                </button>
-                <button class="flex-1 bg-gray-100 text-gray-700 py-2.5 rounded-lg text-sm font-medium hover:bg-gray-200 transition-colors flex items-center justify-center gap-2">
-                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-                  </svg>
-                  Download PDF
-                </button>
-              </div>
-            </div>
-          </div>
-
-          <!-- Book Card 6 -->
-          <div class="bg-white rounded-xl border border-gray-200 overflow-hidden hover:shadow-lg transition-shadow group">
-            <div class="relative h-48 bg-gradient-to-br from-rose-100 to-orange-100 flex items-center justify-center overflow-hidden">
-              <div class="text-6xl">🩺</div>
-              <div class="absolute top-3 left-3 bg-green-500 text-white text-xs font-bold px-2 py-1 rounded-full">نص كامل</div>
-              <div class="absolute top-3 right-3 bg-white/90 backdrop-blur text-gray-700 text-xs font-bold px-2 py-1 rounded-full">PDF</div>
-            </div>
-            <div class="p-5">
-              <h3 class="font-bold text-lg text-gray-900 leading-tight mb-2 group-hover:text-blue-600 transition-colors">الذكاء الاصطناعي في الطب الحديث</h3>
-              <p class="text-sm text-gray-500 mb-3">د. فاطمة الزهراء المالكي</p>
-              <div class="flex items-center gap-1 mb-3 text-yellow-400 text-sm">
-                ★★★★★ <span class="text-gray-400 text-xs">(4.6)</span>
-              </div>
-              <p class="text-sm text-gray-600 leading-relaxed mb-4 line-clamp-3">
-                استكشاف تطبيقات <span class="bg-yellow-100 text-yellow-800 px-1 rounded font-medium">تعلم الآلة</span> والذكاء الاصطناعي في التشخيص الطبي وتحليل الصور الطبية والأدوية...
-              </p>
-              <div class="flex items-center gap-2 text-xs text-gray-400 mb-4">
-                <span>2023</span>
-                <span>•</span>
-                <span>العربية</span>
-                <span>•</span>
-                <span>الطب</span>
-              </div>
-              <div class="flex gap-2">
-                <button class="flex-1 bg-blue-600 text-white py-2.5 rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors flex items-center justify-center gap-2">
-                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                  </svg>
-                  معاينة الكتاب
-                </button>
-                <button class="flex-1 bg-gray-100 text-gray-700 py-2.5 rounded-lg text-sm font-medium hover:bg-gray-200 transition-colors flex items-center justify-center gap-2">
-                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-                  </svg>
-                  تحميل PDF
-                </button>
-              </div>
-            </div>
-          </div>
+        <div id="booksContainer" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+          <!-- Books will be rendered by JavaScript -->
         </div>
 
         <!-- Pagination -->
-        <div class="flex items-center justify-center gap-2 mt-10">
-          <button class="w-10 h-10 flex items-center justify-center rounded-lg border border-gray-300 text-gray-500 hover:bg-gray-50 disabled:opacity-50">
+        <div class="flex items-center justify-center gap-2 mt-10" id="pagination">
+          <button class="w-10 h-10 flex items-center justify-center rounded-lg border border-gray-300 text-gray-500 hover:bg-gray-50" onclick="changePage('prev')">
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
             </svg>
           </button>
-          <button class="w-10 h-10 flex items-center justify-center rounded-lg bg-blue-600 text-white font-medium">1</button>
-          <button class="w-10 h-10 flex items-center justify-center rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-50 font-medium">2</button>
-          <button class="w-10 h-10 flex items-center justify-center rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-50 font-medium">3</button>
+          <button class="w-10 h-10 flex items-center justify-center rounded-lg bg-blue-600 text-white font-medium" onclick="changePage(1)">1</button>
+          <button class="w-10 h-10 flex items-center justify-center rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-50 font-medium" onclick="changePage(2)">2</button>
+          <button class="w-10 h-10 flex items-center justify-center rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-50 font-medium" onclick="changePage(3)">3</button>
           <span class="text-gray-400">...</span>
-          <button class="w-10 h-10 flex items-center justify-center rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-50 font-medium">12</button>
-          <button class="w-10 h-10 flex items-center justify-center rounded-lg border border-gray-300 text-gray-500 hover:bg-gray-50">
+          <button class="w-10 h-10 flex items-center justify-center rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-50 font-medium" onclick="changePage(12)">12</button>
+          <button class="w-10 h-10 flex items-center justify-center rounded-lg border border-gray-300 text-gray-500 hover:bg-gray-50" onclick="changePage('next')">
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
             </svg>
@@ -525,5 +305,557 @@
       <p>© 2025 مكتبة أكاديمية. جميع الحقوق محفوظة.</p>
     </div>
   </footer>
+
+  <!-- Toast Notification -->
+  <div id="toast" class="fixed bottom-5 left-1/2 -translate-x-1/2 bg-gray-900 text-white px-6 py-3 rounded-lg shadow-lg transform translate-y-20 opacity-0 transition-all duration-300 z-50">
+    <span id="toastMessage">تمت العملية بنجاح</span>
+  </div>
+
+  <!-- Preview Modal -->
+  <div id="previewModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-2xl transform scale-95 opacity-0 transition-all duration-300" id="previewModalContent">
+      <div class="p-6">
+        <div class="flex items-start justify-between mb-4">
+          <h3 id="modalTitle" class="text-2xl font-bold text-gray-900">عنوان الكتاب</h3>
+          <button onclick="closeModal()" class="text-gray-400 hover:text-gray-600 p-1">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+        <div id="modalBody" class="space-y-4">
+          <!-- Dynamic content -->
+        </div>
+        <div class="flex gap-3 mt-6">
+          <button class="flex-1 bg-blue-600 text-white py-3 rounded-lg font-medium hover:bg-blue-700 transition-colors" onclick="closeModal()">
+            إغلاق
+          </button>
+          <button id="modalDownloadBtn" class="flex-1 bg-gray-100 text-gray-700 py-3 rounded-lg font-medium hover:bg-gray-200 transition-colors">
+            تحميل PDF
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Book Data
+    const booksData = [
+      {
+        id: 1,
+        title: "مقدمة في تعلم الآلة العميق",
+        author: "د. أحمد محمد الخالدي",
+        rating: 4.8,
+        year: 2022,
+        lang: "ar",
+        category: "cs",
+        access: "full",
+        hasPdf: true,
+        icon: "🤖",
+        gradient: "from-blue-100 to-indigo-100",
+        snippet: "يقدم هذا الكتاب شرحاً مفصلاً لأساسيات تعلم الآلة والشبكات العصبية العميقة، مع تطبيقات عملية باستخدام Python وTensorFlow..."
+      },
+      {
+        id: 2,
+        title: "الإحصاء التطبيقي في البحث العلمي",
+        author: "د. سارة عبدالله القحطاني",
+        rating: 4.5,
+        year: 2023,
+        lang: "ar",
+        category: "math",
+        access: "preview",
+        hasPdf: false,
+        icon: "📊",
+        gradient: "from-emerald-100 to-teal-100",
+        snippet: "دليل شامل لاستخدام الأساليب الإحصائية في البحث العلمي، يتضمن أمثلة تطبيقية على تعلم الآلة وتحليل البيانات..."
+      },
+      {
+        id: 3,
+        title: "Python for Machine Learning: A Practical Guide",
+        author: "Dr. James Anderson",
+        rating: 4.9,
+        year: 2021,
+        lang: "en",
+        category: "cs",
+        access: "full",
+        hasPdf: true,
+        icon: "🧠",
+        gradient: "from-purple-100 to-pink-100",
+        snippet: "A comprehensive guide to machine learning with Python, covering scikit-learn, TensorFlow, and real-world projects..."
+      },
+      {
+        id: 4,
+        title: "الهندسة المدنية: المبادئ والتطبيقات الحديثة",
+        author: "د. خالد بن سليمان العمري",
+        rating: 4.3,
+        year: 2020,
+        lang: "ar",
+        category: "eng",
+        access: "preview",
+        hasPdf: false,
+        icon: "🏗️",
+        gradient: "from-orange-100 to-red-100",
+        snippet: "يغطي هذا الكتاب المبادئ الأساسية للهندسة المدنية مع التركيز على التقنيات الحديثة واستخدام تعلم الآلة في تحليل البيانات الإنشائية..."
+      },
+      {
+        id: 5,
+        title: "Neural Networks and Deep Learning",
+        author: "Dr. Michael Nielsen",
+        rating: 4.7,
+        year: 2022,
+        lang: "en",
+        category: "cs",
+        access: "full",
+        hasPdf: true,
+        icon: "📡",
+        gradient: "from-cyan-100 to-blue-100",
+        snippet: "This book provides a theoretical and practical foundation for understanding machine learning through neural networks and deep architectures..."
+      },
+      {
+        id: 6,
+        title: "الذكاء الاصطناعي في الطب الحديث",
+        author: "د. فاطمة الزهراء المالكي",
+        rating: 4.6,
+        year: 2023,
+        lang: "ar",
+        category: "med",
+        access: "full",
+        hasPdf: true,
+        icon: "🩺",
+        gradient: "from-rose-100 to-orange-100",
+        snippet: "استكشاف تطبيقات تعلم الآلة والذكاء الاصطناعي في التشخيص الطبي وتحليل الصور الطبية والأدوية..."
+      }
+    ];
+
+    let currentView = 'grid';
+    let currentPage = 1;
+    let filteredBooks = [...booksData];
+    let quickFilter = 'all';
+
+    // Initialize
+    document.addEventListener('DOMContentLoaded', function() {
+      renderBooks();
+      updateActiveFilters();
+    });
+
+    // Render Books
+    function renderBooks() {
+      const container = document.getElementById('booksContainer');
+      const searchQuery = document.getElementById('searchInput').value.toLowerCase();
+      
+      let displayBooks = filteredBooks.filter(book => {
+        if (!searchQuery) return true;
+        const searchIn = quickFilter === 'title' ? book.title :
+                        quickFilter === 'author' ? book.author :
+                        quickFilter === 'isbn' ? book.id.toString() :
+                        `${book.title} ${book.author} ${book.id}`;
+        return searchIn.toLowerCase().includes(searchQuery);
+      });
+
+      document.getElementById('resultCount').textContent = displayBooks.length;
+
+      if (displayBooks.length === 0) {
+        container.innerHTML = `
+          <div class="col-span-full text-center py-20">
+            <div class="text-6xl mb-4">🔍</div>
+            <h3 class="text-xl font-bold text-gray-700 mb-2">لا توجد نتائج</h3>
+            <p class="text-gray-500">جرب تعديل معايير البحث أو الفلاتر</p>
+          </div>
+        `;
+        return;
+      }
+
+      container.innerHTML = displayBooks.map(book => {
+        const accessBadge = book.access === 'full' 
+          ? '<div class="absolute top-3 left-3 bg-green-500 text-white text-xs font-bold px-2 py-1 rounded-full">نص كامل</div>'
+          : '<div class="absolute top-3 left-3 bg-amber-500 text-white text-xs font-bold px-2 py-1 rounded-full">معاينة مجانية</div>';
+        
+        const pdfBadge = book.hasPdf 
+          ? '<div class="absolute top-3 right-3 bg-white/90 backdrop-blur text-gray-700 text-xs font-bold px-2 py-1 rounded-full">PDF</div>' 
+          : '';
+
+        const stars = '★'.repeat(Math.floor(book.rating)) + (book.rating % 1 >= 0.5 ? '½' : '');
+        const emptyStars = '☆'.repeat(5 - Math.ceil(book.rating));
+        
+        const langName = book.lang === 'ar' ? 'العربية' : book.lang === 'en' ? 'English' : 'Français';
+        const catNames = { cs: 'علوم الحاسوب', eng: 'الهندسة', med: 'الطب', math: 'الرياضيات', soc: 'العلوم الاجتماعية', lit: 'الأدب', phy: 'الفيزياء', hist: 'التاريخ' };
+
+        if (currentView === 'list') {
+          return `
+            <div class="bg-white rounded-xl border border-gray-200 overflow-hidden hover:shadow-lg transition-shadow group col-span-full">
+              <div class="flex flex-col sm:flex-row">
+                <div class="relative w-full sm:w-48 h-48 sm:h-auto bg-gradient-to-br ${book.gradient} flex items-center justify-center shrink-0">
+                  <div class="text-5xl">${book.icon}</div>
+                  ${accessBadge}
+                  ${pdfBadge}
+                </div>
+                <div class="p-5 flex-1 flex flex-col justify-between">
+                  <div>
+                    <h3 class="font-bold text-lg text-gray-900 leading-tight mb-2 group-hover:text-blue-600 transition-colors">${highlightText(book.title, searchQuery)}</h3>
+                    <p class="text-sm text-gray-500 mb-2">${highlightText(book.author, searchQuery)}</p>
+                    <div class="flex items-center gap-1 mb-2 text-yellow-400 text-sm">
+                      ${stars}${emptyStars} <span class="text-gray-400 text-xs">(${book.rating})</span>
+                    </div>
+                    <p class="text-sm text-gray-600 leading-relaxed mb-3 line-clamp-2">${highlightText(book.snippet, searchQuery)}</p>
+                    <div class="flex items-center gap-2 text-xs text-gray-400">
+                      <span>${book.year}</span><span>•</span><span>${langName}</span><span>•</span><span>${catNames[book.category] || book.category}</span>
+                    </div>
+                  </div>
+                  <div class="flex gap-2 mt-4">
+                    <button onclick="previewBook(${book.id})" class="flex-1 bg-blue-600 text-white py-2.5 rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors flex items-center justify-center gap-2">
+                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+                      معاينة الكتاب
+                    </button>
+                    <button onclick="downloadPdf(${book.id})" class="flex-1 ${book.hasPdf ? 'bg-gray-100 text-gray-700 hover:bg-gray-200' : 'bg-gray-100 text-gray-400 cursor-not-allowed'} py-2.5 rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-2" ${!book.hasPdf ? 'disabled' : ''}>
+                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                      تحميل PDF
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          `;
+        }
+
+        return `
+          <div class="bg-white rounded-xl border border-gray-200 overflow-hidden hover:shadow-lg transition-shadow group">
+            <div class="relative h-48 bg-gradient-to-br ${book.gradient} flex items-center justify-center overflow-hidden cursor-pointer" onclick="previewBook(${book.id})">
+              <div class="text-6xl transform group-hover:scale-110 transition-transform">${book.icon}</div>
+              ${accessBadge}
+              ${pdfBadge}
+            </div>
+            <div class="p-5">
+              <h3 class="font-bold text-lg text-gray-900 leading-tight mb-2 group-hover:text-blue-600 transition-colors cursor-pointer" onclick="previewBook(${book.id})">${highlightText(book.title, searchQuery)}</h3>
+              <p class="text-sm text-gray-500 mb-3">${highlightText(book.author, searchQuery)}</p>
+              <div class="flex items-center gap-1 mb-3 text-yellow-400 text-sm">
+                ${stars}${emptyStars} <span class="text-gray-400 text-xs">(${book.rating})</span>
+              </div>
+              <p class="text-sm text-gray-600 leading-relaxed mb-4 line-clamp-3">${highlightText(book.snippet, searchQuery)}</p>
+              <div class="flex items-center gap-2 text-xs text-gray-400 mb-4">
+                <span>${book.year}</span><span>•</span><span>${langName}</span><span>•</span><span>${catNames[book.category] || book.category}</span>
+              </div>
+              <div class="flex gap-2">
+                <button onclick="previewBook(${book.id})" class="flex-1 bg-blue-600 text-white py-2.5 rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors flex items-center justify-center gap-2 active:scale-95">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+                  معاينة الكتاب
+                </button>
+                <button onclick="downloadPdf(${book.id})" class="flex-1 ${book.hasPdf ? 'bg-gray-100 text-gray-700 hover:bg-gray-200 active:scale-95' : 'bg-gray-100 text-gray-400 cursor-not-allowed'} py-2.5 rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-2" ${!book.hasPdf ? 'disabled' : ''}>
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                  تحميل PDF
+                </button>
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    // Highlight search text
+    function highlightText(text, query) {
+      if (!query) return text;
+      const regex = new RegExp(`(${query})`, 'gi');
+      return text.replace(regex, '<span class="bg-yellow-100 text-yellow-800 px-1 rounded font-medium">$1</span>');
+    }
+
+    // Quick Filter
+    function setQuickFilter(type, btn) {
+      quickFilter = type;
+      document.querySelectorAll('#quickFilters button').forEach(b => {
+        b.classList.remove('bg-blue-600', 'text-white');
+        b.classList.add('bg-white', 'text-gray-600', 'border', 'border-gray-300');
+      });
+      btn.classList.remove('bg-white', 'text-gray-600', 'border', 'border-gray-300');
+      btn.classList.add('bg-blue-600', 'text-white');
+      performSearch();
+    }
+
+    // Search
+    function handleSearch(e) {
+      if (e.key === 'Enter') performSearch();
+    }
+
+    function performSearch() {
+      const query = document.getElementById('searchInput').value;
+      document.getElementById('searchTerm').textContent = query || 'تعلم الآلة';
+      renderBooks();
+      showToast(`تم البحث عن: ${query || 'تعلم الآلة'}`);
+    }
+
+    function resetSearch() {
+      document.getElementById('searchInput').value = '';
+      document.getElementById('searchTerm').textContent = 'تعلم الآلة';
+      renderBooks();
+    }
+
+    // View Switch
+    function switchView(view) {
+      currentView = view;
+      const gridBtn = document.getElementById('gridViewBtn');
+      const listBtn = document.getElementById('listViewBtn');
+      const container = document.getElementById('booksContainer');
+      
+      if (view === 'grid') {
+        gridBtn.classList.add('bg-white', 'shadow-sm', 'text-blue-600');
+        gridBtn.classList.remove('text-gray-500');
+        listBtn.classList.remove('bg-white', 'shadow-sm', 'text-blue-600');
+        listBtn.classList.add('text-gray-500');
+        container.classList.remove('flex', 'flex-col');
+        container.classList.add('grid', 'grid-cols-1', 'md:grid-cols-2', 'xl:grid-cols-3');
+      } else {
+        listBtn.classList.add('bg-white', 'shadow-sm', 'text-blue-600');
+        listBtn.classList.remove('text-gray-500');
+        gridBtn.classList.remove('bg-white', 'shadow-sm', 'text-blue-600');
+        gridBtn.classList.add('text-gray-500');
+        container.classList.remove('grid', 'grid-cols-1', 'md:grid-cols-2', 'xl:grid-cols-3');
+        container.classList.add('flex', 'flex-col');
+      }
+      renderBooks();
+      showToast(view === 'grid' ? 'عرض الشبكة' : 'عرض القائمة');
+    }
+
+    // Filters
+    function applyFilters() {
+      const yearChecks = document.querySelectorAll('#yearFilters input:checked');
+      const langChecks = document.querySelectorAll('#langFilters input:checked');
+      const accessRadio = document.querySelector('#accessFilters input:checked');
+      const catChecks = document.querySelectorAll('#catFilters input:checked');
+      const ratingRadio = document.querySelector('#ratingFilters input:checked');
+
+      filteredBooks = booksData.filter(book => {
+        // Year filter
+        if (yearChecks.length > 0) {
+          const yearMatch = Array.from(yearChecks).some(cb => {
+            const val = cb.value;
+            if (val === '2024-2025') return book.year >= 2024;
+            if (val === '2020-2023') return book.year >= 2020 && book.year <= 2023;
+            if (val === '2015-2019') return book.year >= 2015 && book.year <= 2019;
+            if (val === 'before-2015') return book.year < 2015;
+            return false;
+          });
+          if (!yearMatch) return false;
+        }
+
+        // Language filter
+        if (langChecks.length > 0) {
+          const langMatch = Array.from(langChecks).some(cb => cb.value === book.lang);
+          if (!langMatch) return false;
+        }
+
+        // Access filter
+        if (accessRadio && accessRadio.value !== 'all') {
+          if (accessRadio.value === 'pdf' && !book.hasPdf) return false;
+          if (accessRadio.value !== 'pdf' && book.access !== accessRadio.value) return false;
+        }
+
+        // Category filter
+        if (catChecks.length > 0) {
+          const catMatch = Array.from(catChecks).some(cb => cb.value === book.category);
+          if (!catMatch) return false;
+        }
+
+        // Rating filter
+        if (ratingRadio) {
+          if (book.rating < parseInt(ratingRadio.value)) return false;
+        }
+
+        return true;
+      });
+
+      updateActiveFilters();
+      renderBooks();
+    }
+
+    function updateActiveFilters() {
+      const container = document.getElementById('activeFilters');
+      const tags = [];
+      
+      document.querySelectorAll('#yearFilters input:checked').forEach(cb => {
+        tags.push({ type: 'year', value: cb.value, label: cb.nextElementSibling.textContent });
+      });
+      document.querySelectorAll('#langFilters input:checked').forEach(cb => {
+        tags.push({ type: 'lang', value: cb.value, label: cb.nextElementSibling.textContent });
+      });
+      document.querySelectorAll('#catFilters input:checked').forEach(cb => {
+        tags.push({ type: 'cat', value: cb.value, label: cb.nextElementSibling.textContent });
+      });
+
+      container.innerHTML = tags.map(tag => `
+        <span class="inline-flex items-center gap-1 px-3 py-1 bg-blue-50 text-blue-700 rounded-full text-sm border border-blue-200 animate-fade-in">
+          ${tag.label}
+          <button class="hover:text-blue-900 font-bold ml-1" onclick="removeFilter('${tag.type}', '${tag.value}')">×</button>
+        </span>
+      `).join('');
+    }
+
+    function removeFilter(type, value) {
+      let selector;
+      if (type === 'year') selector = `#yearFilters input[value="${value}"]`;
+      else if (type === 'lang') selector = `#langFilters input[value="${value}"]`;
+      else if (type === 'cat') selector = `#catFilters input[value="${value}"]`;
+      
+      const cb = document.querySelector(selector);
+      if (cb) {
+        cb.checked = false;
+        applyFilters();
+      }
+    }
+
+    function resetFilters() {
+      document.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.checked = false);
+      document.querySelectorAll('input[type="radio"]').forEach(rb => rb.checked = false);
+      document.querySelector('#accessFilters input[value="all"]').checked = true;
+      document.querySelector('#yearFilters input[value="2020-2023"]').checked = true;
+      document.querySelector('#langFilters input[value="ar"]').checked = true;
+      document.querySelector('#langFilters input[value="en"]').checked = true;
+      document.querySelector('#catFilters input[value="eng"]').checked = true;
+      applyFilters();
+      showToast('تم إعادة ضبط الفلاتر');
+    }
+
+    // Sort
+    function sortBooks() {
+      const sortType = document.getElementById('sortSelect').value;
+      
+      filteredBooks.sort((a, b) => {
+        if (sortType === 'newest') return b.year - a.year;
+        if (sortType === 'rating') return b.rating - a.rating;
+        if (sortType === 'popular') return b.rating * b.year - a.rating * a.year;
+        return 0;
+      });
+      
+      renderBooks();
+      showToast('تم ترتيب النتائج');
+    }
+
+    // Pagination
+    function changePage(page) {
+      if (page === 'prev') {
+        if (currentPage > 1) currentPage--;
+      } else if (page === 'next') {
+        currentPage++;
+      } else {
+        currentPage = page;
+      }
+      
+      document.querySelectorAll('#pagination button').forEach(btn => {
+        btn.classList.remove('bg-blue-600', 'text-white');
+        btn.classList.add('text-gray-700', 'border', 'border-gray-300');
+      });
+      
+      const activeBtn = document.querySelector(`#pagination button:nth-child(${currentPage + 1})`);
+      if (activeBtn) {
+        activeBtn.classList.remove('text-gray-700', 'border', 'border-gray-300');
+        activeBtn.classList.add('bg-blue-600', 'text-white');
+      }
+      
+      showToast(`الصفحة ${currentPage}`);
+      renderBooks();
+    }
+
+    // Preview Modal
+    function previewBook(id) {
+      const book = booksData.find(b => b.id === id);
+      if (!book) return;
+
+      document.getElementById('modalTitle').textContent = book.title;
+      document.getElementById('modalBody').innerHTML = `
+        <div class="flex items-center gap-4 mb-4">
+          <div class="w-20 h-20 bg-gradient-to-br ${book.gradient} rounded-xl flex items-center justify-center text-4xl">
+            ${book.icon}
+          </div>
+          <div>
+            <p class="text-gray-600">${book.author}</p>
+            <div class="flex items-center gap-1 text-yellow-400 mt-1">
+              ${'★'.repeat(Math.floor(book.rating))}${'☆'.repeat(5 - Math.floor(book.rating))}
+              <span class="text-gray-400 text-sm mr-2">(${book.rating}/5)</span>
+            </div>
+            <p class="text-sm text-gray-400 mt-1">${book.year} • ${book.lang === 'ar' ? 'العربية' : 'English'}</p>
+          </div>
+        </div>
+        <div class="bg-gray-50 rounded-lg p-4">
+          <h4 class="font-semibold text-gray-700 mb-2">نبذة عن الكتاب:</h4>
+          <p class="text-gray-600 leading-relaxed">${book.snippet}</p>
+        </div>
+        <div class="flex gap-2 mt-4">
+          <span class="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm">${book.access === 'full' ? 'نص كامل' : 'معاينة مجانية'}</span>
+          ${book.hasPdf ? '<span class="px-3 py-1 bg-green-100 text-green-700 rounded-full text-sm">PDF متاح</span>' : ''}
+        </div>
+      `;
+      
+      const downloadBtn = document.getElementById('modalDownloadBtn');
+      if (book.hasPdf) {
+        downloadBtn.classList.remove('bg-gray-100', 'text-gray-400', 'cursor-not-allowed');
+        downloadBtn.classList.add('bg-gray-100', 'text-gray-700', 'hover:bg-gray-200');
+        downloadBtn.disabled = false;
+        downloadBtn.onclick = () => downloadPdf(book.id);
+      } else {
+        downloadBtn.classList.add('bg-gray-100', 'text-gray-400', 'cursor-not-allowed');
+        downloadBtn.disabled = true;
+      }
+
+      const modal = document.getElementById('previewModal');
+      const content = document.getElementById('previewModalContent');
+      modal.classList.remove('hidden');
+      setTimeout(() => {
+        content.classList.remove('scale-95', 'opacity-0');
+        content.classList.add('scale-100', 'opacity-100');
+      }, 10);
+    }
+
+    function closeModal() {
+      const modal = document.getElementById('previewModal');
+      const content = document.getElementById('previewModalContent');
+      content.classList.remove('scale-100', 'opacity-100');
+      content.classList.add('scale-95', 'opacity-0');
+      setTimeout(() => {
+        modal.classList.add('hidden');
+      }, 300);
+    }
+
+    // Download PDF
+    function downloadPdf(id) {
+      const book = booksData.find(b => b.id === id);
+      if (!book || !book.hasPdf) {
+        showToast('PDF غير متاح لهذا الكتاب', 'error');
+        return;
+      }
+      showToast(`جاري تحميل: ${book.title}...`);
+      setTimeout(() => {
+        showToast('تم التحميل بنجاح! ✅');
+      }, 1500);
+    }
+
+    // User Profile
+    function showUserProfile() {
+      showToast('الملف الشخصي - د. أحمد (قريباً)');
+    }
+
+    // Toast
+    function showToast(message, type = 'success') {
+      const toast = document.getElementById('toast');
+      const msg = document.getElementById('toastMessage');
+      msg.textContent = message;
+      toast.classList.remove('translate-y-20', 'opacity-0');
+      toast.classList.add('translate-y-0', 'opacity-100');
+      
+      setTimeout(() => {
+        toast.classList.add('translate-y-20', 'opacity-0');
+        toast.classList.remove('translate-y-0', 'opacity-100');
+      }, 3000);
+    }
+
+    // Close modal on backdrop click
+    document.getElementById('previewModal').addEventListener('click', function(e) {
+      if (e.target === this) closeModal();
+    });
+  </script>
 </body>
-</html>
+</html>'''
+
+# Save to file
+with open('/mnt/agents/output/academic_library_search.html', 'w', encoding='utf-8') as f:
+    f.write(html_code)
+
+print("File saved successfully!")
+print(f"Total lines: {len(html_code.splitlines())}")
+print(f"Total characters: {len(html_code)}")
